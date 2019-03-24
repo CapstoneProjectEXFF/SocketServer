@@ -1,0 +1,4 @@
+get user inventory x
+get item's owner inventory x
+create room socket -> room id to database
+-> redirect to trading/{roomId}

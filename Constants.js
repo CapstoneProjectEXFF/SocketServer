@@ -1,0 +1,1 @@
+exports.TRADING_CONFIRM = 1;

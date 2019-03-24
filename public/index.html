@@ -1,0 +1,49 @@
+<html>
+
+   <head>
+      <title>exff</title>
+      <link rel="stylesheet" href="/stylesheets/style.css">
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+      <script>
+         $(function () {
+            var socket = io();
+            socket.emit('room', 'hieu-thang');
+            $('form').submit(function(e) {
+               e.preventDefault(); // prevents page reloading
+               socket.emit('send-msg', $('#m').val());
+               $('#m').val('');
+               return false;
+            });
+
+            socket.on('send-msg', function(msg){
+               $('#messages').append($('<li>').text(msg));
+               //   alert(msg)
+            });
+            addItem = function(itemId, room) {
+              var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
+              socket.emit('add-item', tradeInfo);
+            }
+            rmItem = function(itemId, room) {
+              var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
+              socket.emit('rm-item', tradeInfo);
+            }
+         });
+      </script>
+   </head>
+
+   <body>
+      <ul id="messages"></ul>
+      <form action="">
+         <input id="m" autocomplete="off" "/><button>Send</button>
+      </form>
+      <button id="it1" onclick="addItem(this.id)">item 1</button>
+      <button id="it2" onclick="addItem(this.id)">item 2</button>
+      <button id="it3" onclick="addItem(this.id)">item 3</button>
+      <br/>
+      <button id="it1" onclick="rmItem(this.id)">item 1</button>
+      <button id="it2" onclick="rmItem(this.id)">item 2</button>
+      <button id="it3" onclick="rmItem(this.id)">item 3</button>
+   </body>
+
+</html>
