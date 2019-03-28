@@ -16,11 +16,11 @@ var tradingSpace = Socket.tradingSpace;
 //}
 
 exports.getUserTrading = async function(req, res) {
-   return Trade.find({'users.userId': req.query.userId}).exec()
-      //await Trade.find({'users.userId': req.query.userId}, function(trades) {
-      //awaconsole.log(trades);
-      //awares.send(trades);
-   //})
+      await Trade.find({'users.userId': req.query.userId}, function(err, trades) {
+         console.log(trades)
+         //console.log(req.query.userId);
+         res.send(trades);
+   })
 }
 
 exports.createTrade = async function(roomInfo, io) {
