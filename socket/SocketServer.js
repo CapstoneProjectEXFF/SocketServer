@@ -8,7 +8,7 @@ exports.ioOperate = function(io) {
          socket.join(room);
          console.log(`Room ${room} create`);
          //var trade = {userA: 'hieu', userB: 'thang', room: room};
-         trading.createT(room, io);
+         trading.createTrade(room, io);
       })
 
       socket.on('send-msg', function(data) {
@@ -24,7 +24,7 @@ exports.ioOperate = function(io) {
          trading.addItem(data, io);
       })
       
-      socket.on('rm-item', function(data) {
+      socket.on('remove-item', function(data) {
          trading.removeItem(data, io);
       })
 
