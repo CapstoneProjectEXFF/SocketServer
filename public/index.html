@@ -7,6 +7,7 @@
       <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
       <script>
          $(function () {
+            //var socket = io("http://35.247.191.68:3000/");
             var socket = io();
             socket.emit('room', 'hieu-thang');
             $('form').submit(function(e) {
