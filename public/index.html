@@ -12,7 +12,11 @@
             socket.emit('room', 'hieu-thang');
             $('form').submit(function(e) {
                e.preventDefault(); // prevents page reloading
-               socket.emit('send-msg', $('#m').val());
+               var message = {
+                  sender: 'hieu',
+                  msg: $('#m').val()
+               }
+               socket.emit('send-msg', message);
                $('#m').val('');
                return false;
             });
