@@ -4,7 +4,7 @@ const tradeSchema = new mongoose.Schema({
    users: [{userId: String, item: [String]}],
    messages: [{
       sender: String,
-      content: String
+      msg: String
       //   sendedTime: Date
    }],
    room: String,

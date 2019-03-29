@@ -24,11 +24,10 @@ exports.getUserTrading = async function(req, res) {
 }
 
 exports.getRoomMessage = async function(req, res) {
-      await Trade.find({'room': req.query.roomId}, {'messages': 1}, function(err, trades) {
-         console.log(trades)
+      await Trade.find({'room': req.query.roomId}, {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
          //console.log(req.query.userId);
          res.send(trades);
-   })
+   });
 }
 
 exports.createTrade = async function(roomInfo, io) {
@@ -50,7 +49,7 @@ exports.createTrade = async function(roomInfo, io) {
 exports.sendMessage = async function(req, io) {
    var message = {
       sender: req.sender,
-      content: req.msg
+      msg: req.msg
    }
    console.log(`${req.sender}: ${req.msg}`);
    await Trade.update({'room': req.room},
