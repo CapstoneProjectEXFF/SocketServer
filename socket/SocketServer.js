@@ -1,4 +1,5 @@
 var trading = require('../controller/TradeController');
+var message = require('../controller/MessageController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
@@ -13,7 +14,8 @@ exports.ioOperate = function(io) {
 
       socket.on('send-msg', function(data) {
          console.log('msg: ' + data);
-         io.emit('send-msg', data);
+         trading.sendMessage(data);
+         io.emit('send-msg', data.msg);
       });
 
       socket.on('send-req', function(data) {

@@ -23,11 +23,20 @@ exports.getUserTrading = async function(req, res) {
    })
 }
 
+exports.getRoomMessage = async function(req, res) {
+      await Trade.find({'room': req.query.roomId}, {'messages': 1}, function(err, trades) {
+         console.log(trades)
+         //console.log(req.query.userId);
+         res.send(trades);
+   })
+}
+
 exports.createTrade = async function(roomInfo, io) {
    //var tradeInfo = {userA:{userId:'hieu'}, userB:{userId:'thang'}, room: room};
+   console.log('hehe' + roomInfo.room)
    var tradeInfo = {
       users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
-      room: roomInfo.room, status: 1
+      message: [], room: roomInfo.room, status: 1
    };
    //var tradeInfo = {userA:'hieu', userB:'thang', room: room};
    var trade = new Trade(tradeInfo);
@@ -36,6 +45,21 @@ exports.createTrade = async function(roomInfo, io) {
       io.emit('create-trade', roomInfo.room);
       console.log('namespace name: ' + Socket.tradingSpace.name);
    })
+}
+
+exports.sendMessage = async function(req, io) {
+   var message = {
+      sender: req.sender,
+      content: req.msg
+   }
+   console.log(`${req.sender}: ${req.msg}`);
+   await Trade.update({'room': req.room},
+      {'$addToSet': {messages: message}},
+      (err) => {
+         //console.log(trade);
+         if(err) console.log(500, err);
+      }
+   )
 }
 
 exports.addItem = async function(req, io) {

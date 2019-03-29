@@ -12,3 +12,4 @@ exports.sendMessage = async function(req, res) {
       res.sendStatus(200);
    })
 }
+
