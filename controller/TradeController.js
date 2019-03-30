@@ -32,7 +32,6 @@ exports.getRoomMessage = async function(req, res) {
 
 exports.createTrade = async function(roomInfo, io) {
    //var tradeInfo = {userA:{userId:'hieu'}, userB:{userId:'thang'}, room: room};
-   console.log('hehe' + roomInfo.room)
    var tradeInfo = {
       users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
       message: [], room: roomInfo.room, status: 1
@@ -62,11 +61,11 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.addItem = async function(req, io) {
-   console.log(`item ${req.itemId} added to room ${req.room}`);
+   console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$addToSet': {'users.$.item': [req.itemId]}},
-      (err) => {
-         //console.log(trade);
+      (trade, err) => {
+         console.log(trade);
          if(err) console.log(500, err);
       }
    )

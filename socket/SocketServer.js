@@ -15,7 +15,7 @@ exports.ioOperate = function(io) {
       socket.on('send-msg', function(data) {
          console.log('msg: ' + data);
          trading.sendMessage(data);
-         io.emit('send-msg', data.msg);
+         io.emit('send-msg', data);
       });
 
       socket.on('send-req', function(data) {
