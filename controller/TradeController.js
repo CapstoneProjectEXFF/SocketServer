@@ -52,6 +52,7 @@ exports.upsertTrade = async function(req, io) {
          console.log('update room');
          activeTrade(req.room);
       }
+      io.emit('room-ready');
    })
 }
 
