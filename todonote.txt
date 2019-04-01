@@ -24,5 +24,7 @@ Conversation {
       sender: String,
       msg: String
    }]
-
 }
+-----------------------------------------
+1. check room existed 
+2. query sort active time

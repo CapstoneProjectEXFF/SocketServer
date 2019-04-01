@@ -4,12 +4,11 @@ exports.ioOperate = function(io) {
    io.on('connection', socket => {
       console.log('user connected');
 
-      socket.on('room', function(room) {
-         console.log(socket.adapter.rooms[room.room]);
+      socket.on('get-room', function(room) {
          socket.join(room.room);
-         console.log(`Room ${room.room} create`);
-         //var trade = {userA: 'hieu', userB: 'thang', room: room};
-         trading.createTrade(room, io);
+         console.log(`join room ${room.room}`);
+         var trade = {userA: 'hieu', userB: 'thang', room: room};
+         trading.upsertTrade(room, io);
       })
 
       socket.on('send-msg', function(data) {
@@ -28,10 +27,6 @@ exports.ioOperate = function(io) {
 
       socket.on('remove-item', function(data) {
          trading.removeItem(data, io);
-      })
-
-      socket.on('create-trade', function(room) {
-         socket.join(room);
       })
    })
 }

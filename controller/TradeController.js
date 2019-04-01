@@ -16,15 +16,20 @@ var item = require('../controller/ItemController');
 //   })
 //}
 //
-exports.isExistedRoom = async function(req, res) {
-   await Trade.find({'room': req.query.roomId}, function(err, trades) {
-         res.send(trades);
-      })
+isExistedRoom = async function(room, io) {
+   await Trade.find({'room': roomId}, function(err, trades) {
+      if (trades.length === 0 ) {
+         console.log('room existed');
+         createTrade(req, io);
+      }
+      console.log('update room');
+      activeTrade(req.room);
+   })
 }
 
 exports.getUserTrading = async function(req, res) {
    await Trade.find({'users.userId': req.query.userId},
-      {'_id': 0, 'users._id': 0}, function(err, trades) {
+      {'_id': 0, 'users._id': 0},{activeTime: 'desc'}, function(err, trades) {
          console.log(trades)
          //console.log(req.query.userId);
          res.send(trades);
@@ -38,11 +43,35 @@ exports.getRoomMessage = async function(req, res) {
    });
 }
 
-exports.createTrade = async function(roomInfo, io) {
+exports.upsertTrade = async function(req, io) {
+   await Trade.find({'room': req.room}, function(err, trades) {
+      if (trades.length === 0 ) {
+         console.log('room existed');
+         createTrade(req, io);
+      } else {
+         console.log('update room');
+         activeTrade(req.room);
+      }
+   })
+}
+
+activeTrade = async function(roomId) {
+   await Trade.updateOne({'room': roomId},
+      {activeTime: new Date()},
+      (err) => {
+         //console.log(trade);
+         if(err) console.log(500, err);
+      }
+   )
+}
+
+createTrade = async function(roomInfo, io) {
    //var tradeInfo = {userA:{userId:'hieu'}, userB:{userId:'thang'}, room: room};
    var tradeInfo = {
       users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
-      message: [], room: roomInfo.room, status: 1
+      message: [], room: roomInfo.room,
+      activeTime: new Date(),
+      status: 1
    };
    //var tradeInfo = {userA:'hieu', userB:'thang', room: room};
    var trade = new Trade(tradeInfo);

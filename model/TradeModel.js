@@ -13,6 +13,7 @@ const tradeSchema = new mongoose.Schema({
       //   sentTime: Date
    }],
    room: String,
+   activeTime: Date,
    status: Number
 }, {
    collection: 'Trade',
