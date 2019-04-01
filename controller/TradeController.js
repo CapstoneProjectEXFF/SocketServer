@@ -17,17 +17,18 @@ var item = require('../controller/ItemController');
 //}
 
 exports.getUserTrading = async function(req, res) {
-      await Trade.find({'users.userId': req.query.userId}, function(err, trades) {
+   await Trade.find({'users.userId': req.query.userId},
+      {'_id': 0, 'users._id': 0}, function(err, trades) {
          console.log(trades)
          //console.log(req.query.userId);
          res.send(trades);
-   })
+      })
 }
 
 exports.getRoomMessage = async function(req, res) {
-      await Trade.find({'room': req.query.roomId}, {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
-         //console.log(req.query.userId);
-         res.send(trades);
+   await Trade.find({'room': req.query.roomId}, {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
+      //console.log(req.query.userId);
+      res.send(trades);
    });
 }
 

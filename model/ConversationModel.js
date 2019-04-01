@@ -1,12 +1,7 @@
 const mongoose = require('mongoose');
 
 const tradeSchema = new mongoose.Schema({
-   users: [{
-      userId: String,
-      userName: String,
-      item: [String],
-      avatar: String
-   }],
+   users: [{userId: String, userName: String, item: [String]}],
    messages: [{
       sender: String,
       msg: String
@@ -19,4 +14,3 @@ const tradeSchema = new mongoose.Schema({
    max: 1000
 })
 
-module.exports = mongoose.model('Trade', tradeSchema);
