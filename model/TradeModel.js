@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const tradeSchema = new mongoose.Schema({
-   users: [{userId: String, item: [String]}],
+   users: [{userId: String, userName: String, item: [String]}],
    messages: [{
       sender: String,
       msg: String
-      //   sendedTime: Date
+      //   sentTime: Date
    }],
    room: String,
    status: Number

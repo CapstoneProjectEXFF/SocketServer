@@ -1,5 +1,4 @@
 var trading = require('../controller/TradeController');
-var message = require('../controller/MessageController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {

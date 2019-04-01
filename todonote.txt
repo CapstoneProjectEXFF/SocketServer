@@ -2,3 +2,27 @@ get user inventory x
 get item's owner inventory x
 create room socket -> room id to database
 -> redirect to trading/{roomId}
+-----------------------------------------
+Item {
+   id: String,
+   rooms: [String],
+   status: Number
+}
+
+Conversation {
+   users: [userA, userB],
+   tradings: [{
+      tradeId: String,
+      items: [{
+         userA: [String],
+         userB: [String]
+      }],
+      transferDate: Date,
+      status: Number
+   }],
+   messages: [{
+      sender: String,
+      msg: String
+   }]
+
+}

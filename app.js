@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //schema impl and connect to mlab
 var mongoose = require('mongoose');
 var
-   Message = require('./model/MessageModel');
+   Item = require('./model/ItemModel');
    Trade = require('./model/TradeModel');
 
 mongoose.connect(dbUrl, (err) => {
@@ -35,8 +35,8 @@ mongoose.connect(dbUrl, (err) => {
 //});
 
 //route impl
-var MessageRoute = require('./routes/MessageRoute');
-MessageRoute(app);
+//var ItemRoute = require('./routes/MessageRoute');
+//ItemRoute(app);
 var TradeRoute = require('./routes/TradeRoute');
 TradeRoute(app);
 

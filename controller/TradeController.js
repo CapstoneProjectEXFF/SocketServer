@@ -3,6 +3,7 @@ var Trade = mongoose.model('Trade');
 var Socket = require('../bin/www');
 var io = Socket.io;
 var tradingSpace = Socket.tradingSpace;
+var item = require('../controller/ItemController');
 
 //exports.createTrade = async function(req, res) {
 //   var trade = new Trade(req.body);
