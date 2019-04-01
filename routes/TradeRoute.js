@@ -7,4 +7,6 @@ module.exports = function (app) {
       .post(trading.createTrade);
    app.route('/trading/msg')
       .get(trading.getRoomMessage);
+   app.route('/trading/room')
+      .get(trading.isExistedRoom);
 }

@@ -15,6 +15,12 @@ var item = require('../controller/ItemController');
 //      res.sendStatus(200);
 //   })
 //}
+//
+exports.isExistedRoom = async function(req, res) {
+   await Trade.find({'room': req.query.roomId}, function(err, trades) {
+         res.send(trades);
+      })
+}
 
 exports.getUserTrading = async function(req, res) {
    await Trade.find({'users.userId': req.query.userId},
