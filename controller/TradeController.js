@@ -4,6 +4,8 @@ var Socket = require('../bin/www');
 var io = Socket.io;
 var tradingSpace = Socket.tradingSpace;
 var item = require('../controller/ItemController');
+var fetch = require('node-fetch');
+var Bluebird = require('bluebird');
 
 //exports.createTrade = async function(req, res) {
 //   var trade = new Trade(req.body);
@@ -16,18 +18,9 @@ var item = require('../controller/ItemController');
 //   })
 //}
 //
-isExistedRoom = async function(room, io) {
-   await Trade.find({'room': roomId}, function(err, trades) {
-      if (trades.length === 0 ) {
-         console.log('room existed');
-         createTrade(req, io);
-      }
-      console.log('update room');
-      activeTrade(req.room);
-   })
-}
 
 exports.getUserTrading = async function(req, res) {
+   console.log('hello')
    await Trade.find({'users.userId': req.query.userId},
       {'_id': 0, 'users._id': 0},{activeTime: 'desc'}, function(err, trades) {
          console.log(trades)
@@ -36,6 +29,16 @@ exports.getUserTrading = async function(req, res) {
       })
 }
 
+exports.getRoomById = async function(req, res) {
+   await Trade.findOne({'room': req.query.roomId},
+      {'_id': 0, 'users._id': 0}, function(err, trade) {
+         console.log(trade)
+         //console.log(req.query.userId);
+         res.send(trade);
+      })
+}
+
+
 exports.getRoomMessage = async function(req, res) {
    await Trade.find({'room': req.query.roomId}, {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
       //console.log(req.query.userId);
@@ -43,10 +46,18 @@ exports.getRoomMessage = async function(req, res) {
    });
 }
 
+isExistedRoom = function(roomId, reqId) {
+   var oldId = roomId.split('-').sort();
+   var newId = req.split('-').sort();
+   var res = oldId.map((x, i) => x === newId[i] ? true: false);
+   if (res.indexOf(false) !== -1) return false;
+   return true;
+}
+
 exports.upsertTrade = async function(req, io) {
    await Trade.find({'room': req.room}, function(err, trades) {
-      if (trades.length === 0 ) {
-         console.log('room existed');
+      if (trades.length === 0 && !isExistedRoom(trades[0].room, req.room)) {
+         console.log('create new room');
          createTrade(req, io);
       } else {
          console.log('update room');
@@ -118,3 +129,42 @@ exports.removeItem = async function(req, io) {
       }
    )
 }
+
+exports.confirmTrade = async function(req, io) {
+   console.log(`${req.userId} has confirmed`);
+   await Trade.update({'room': req.room, 'users.userId': req.userId},
+      {'users.$.status': 1},
+      (err, trade) => {
+         checkTradeStatus(req);
+         if(err) console.log(500, err);
+      }
+   )
+}
+
+checkTradeStatus = async function(req, io) {
+   console.log(`${req.userId} has confirmed`);
+   await Trade.find({$and:[{'room': req.room}, {'users.status': 1}]},
+      {'users': 1},
+      (err, users) => {
+         console.log(users.length);
+         if(users.length === 1) {
+            fetch.Promise = Bluebird;
+            fetch('http://localhost:8080/')
+               .then(res => res.text())
+               .then(body => console.log('hello im spring' + body));
+         }
+         if(err) console.log(500, err);
+      }
+   )
+}
+
+exports.cancelTrade = async function(req, io) {
+   console.log(`${req.userId} has canceled`);
+   await Trade.update({'room': req.room},
+      {'tradeStatus': -1},
+      (err, trade) => {
+         if(err) console.log(500, err);
+      }
+   )
+}
+

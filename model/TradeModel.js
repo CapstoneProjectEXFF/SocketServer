@@ -5,7 +5,11 @@ const tradeSchema = new mongoose.Schema({
       userId: String,
       userName: String,
       item: [String],
-      avatar: String
+      avatar: String,
+      status: {
+         type: Number,
+         default: function() {return 0;}
+      }
    }],
    messages: [{
       sender: String,
@@ -14,6 +18,8 @@ const tradeSchema = new mongoose.Schema({
    }],
    room: String,
    activeTime: Date,
+   transferTime: Date,
+   transferLocation: String,
    status: Number
 }, {
    collection: 'Trade',

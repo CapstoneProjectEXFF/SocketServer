@@ -28,6 +28,14 @@ exports.ioOperate = function(io) {
       socket.on('remove-item', function(data) {
          trading.removeItem(data, io);
       })
+      
+      socket.on('cancel-trade', function(data) {
+         trading.cancelTrade(data, io);
+      })
+
+      socket.on('confirm-trade', function(data) {
+         trading.confirmTrade(data, io);
+      })
    })
 }
 

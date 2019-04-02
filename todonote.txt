@@ -28,3 +28,7 @@ Conversation {
 -----------------------------------------
 1. check room existed 
 2. query sort active time
+{
+   roomId: String,
+   userId: String
+}
