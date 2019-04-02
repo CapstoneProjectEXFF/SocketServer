@@ -30,7 +30,7 @@ exports.getUserTrading = async function(req, res) {
 }
 
 exports.getRoomById = async function(req, res) {
-   await Trade.findOne({'room': req.query.roomId},
+   await Trade.findOne({'room': req.query.room},
       {'_id': 0, 'users._id': 0}, function(err, trade) {
          console.log(trade)
          //console.log(req.query.userId);
