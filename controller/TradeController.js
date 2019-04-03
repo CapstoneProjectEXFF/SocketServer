@@ -48,7 +48,7 @@ exports.getRoomMessage = async function(req, res) {
 
 isExistedRoom = function(roomId, reqId) {
    var oldId = roomId.split('-').sort();
-   var newId = req.split('-').sort();
+   var newId = reqId.split('-').sort();
    var res = oldId.map((x, i) => x === newId[i] ? true: false);
    if (res.indexOf(false) !== -1) return false;
    return true;
@@ -56,12 +56,17 @@ isExistedRoom = function(roomId, reqId) {
 
 exports.upsertTrade = async function(req, io) {
    await Trade.find({'room': req.room}, function(err, trades) {
-      if (trades.length === 0 && !isExistedRoom(trades[0].room, req.room)) {
+      if (trades.length === 0 ) {
          console.log('create new room');
          createTrade(req, io);
       } else {
-         console.log('update room');
-         activeTrade(req.room);
+         if (!isExistedRoom(trades[0].room, req.room)) {
+            console.log('create new room');
+            createTrade(req, io);
+         } else {
+            console.log('update room');
+            activeTrade(req.room);
+         }
       }
       io.emit('room-ready');
    })
@@ -149,7 +154,7 @@ checkTradeStatus = async function(req, io) {
          console.log(users.length);
          if(users.length === 1) {
             fetch.Promise = Bluebird;
-            fetch('http://localhost:8080/')
+            fetch('http://localhost:8080/transaction')
                .then(res => res.text())
                .then(body => console.log('hello im spring' + body));
          }

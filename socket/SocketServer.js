@@ -7,7 +7,6 @@ exports.ioOperate = function(io) {
       socket.on('get-room', function(room) {
          socket.join(room.room);
          console.log(`join room ${room.room}`);
-         var trade = {userA: 'hieu', userB: 'thang', room: room};
          trading.upsertTrade(room, io);
       })
 

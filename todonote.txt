@@ -32,3 +32,4 @@ Conversation {
    roomId: String,
    userId: String
 }
+-----------------------------------------
