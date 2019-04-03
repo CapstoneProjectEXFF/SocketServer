@@ -50,8 +50,8 @@ isExistedRoom = function(roomId, reqId) {
    var oldId = roomId.split('-').sort();
    var newId = reqId.split('-').sort();
    var res = oldId.map((x, i) => x === newId[i] ? true: false);
-   if (res.indexOf(false) === -1) return false;
-   return true;
+   if (res.indexOf(false) === -1) return true;
+   return false;
 }
 
 exports.upsertTrade = async function(req, io) {
