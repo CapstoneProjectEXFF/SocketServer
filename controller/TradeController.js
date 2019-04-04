@@ -7,24 +7,9 @@ var item = require('../controller/ItemController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
 
-//exports.createTrade = async function(req, res) {
-//   var trade = new Trade(req.body);
-//   var trade = new Trade(tradeInfo);
-//   await trade.save((err) => {
-//      if(err) sendStatus(500);
-//      io.emit('create-trade', req.body.room);
-//      console.log('namespace name: ' + Socket.tradingSpace.name);
-//      res.sendStatus(200);
-//   })
-//}
-//
-
 exports.getUserTrading = async function(req, res) {
-   console.log('hello')
    await Trade.find({'users.userId': req.query.userId},
       {'_id': 0, 'users._id': 0},{activeTime: 'desc'}, function(err, trades) {
-         console.log(trades)
-         //console.log(req.query.userId);
          res.send(trades);
       })
 }
@@ -32,65 +17,40 @@ exports.getUserTrading = async function(req, res) {
 exports.getRoomById = async function(req, res) {
    await Trade.findOne({'room': req.query.room},
       {'_id': 0, 'users._id': 0}, function(err, trade) {
-         console.log(trade)
-         //console.log(req.query.userId);
          res.send(trade);
       })
 }
 
-
 exports.getRoomMessage = async function(req, res) {
-   await Trade.find({'room': req.query.roomId}, {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
-      //console.log(req.query.userId);
-      res.send(trades);
-   });
-}
-
-isExistedRoom = function(roomId, reqId) {
-   var oldId = roomId.split('-').sort();
-   var newId = reqId.split('-').sort();
-   var res = oldId.map((x, i) => x === newId[i] ? true: false);
-   if (res.indexOf(false) === -1) return true;
-   return false;
+   await Trade.find({'room': req.query.roomId},
+      {'messages.sender': 1, 'messages.msg': 1}, function(err, trades) {
+         res.send(trades);
+      });
 }
 
 exports.upsertTrade = async function(req, io) {
-   await Trade.find({'room': req.room}, function(err, trades) {
-      if (trades.length === 0 ) {
+   var users = req.room.split('-');
+   await Trade.updateOne({$and: [
+      {"users.userId": users[0]},
+      {"users.userId": users[1]}
+   ]}, {"activeTime": new Date()} , function(err, trade) {
+      if (err) console.log(500);
+      console.log(trade);
+      if (trade.n === 0) {
          console.log('create new room');
          createTrade(req, io);
-      } else {
-         if (!isExistedRoom(trades[0].room, req.room)) {
-            console.log('create new room');
-            createTrade(req, io);
-         } else {
-            console.log('update room');
-            activeTrade(req.room);
-         }
       }
       io.emit('room-ready');
    })
 }
 
-activeTrade = async function(roomId) {
-   await Trade.updateOne({'room': roomId},
-      {activeTime: new Date()},
-      (err) => {
-         //console.log(trade);
-         if(err) console.log(500, err);
-      }
-   )
-}
-
 createTrade = async function(roomInfo, io) {
-   //var tradeInfo = {userA:{userId:'hieu'}, userB:{userId:'thang'}, room: room};
    var tradeInfo = {
       users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
       message: [], room: roomInfo.room,
       activeTime: new Date(),
       status: 1
    };
-   //var tradeInfo = {userA:'hieu', userB:'thang', room: room};
    var trade = new Trade(tradeInfo);
    await trade.save((err) => {
       if(err) console.log(500);
@@ -108,7 +68,6 @@ exports.sendMessage = async function(req, io) {
    await Trade.update({'room': req.room},
       {'$addToSet': {messages: message}},
       (err) => {
-         //console.log(trade);
          if(err) console.log(500, err);
       }
    )
@@ -152,9 +111,27 @@ checkTradeStatus = async function(req, io) {
       {'users': 1},
       (err, users) => {
          console.log(users.length);
-         if(users.length === 1) {
+         if(users.length !== 2) {
+            var transactionWrapper = {
+               "transaction": {
+                  "receiverId": req.receiverId,
+                  "donationPostId": -1,
+                  "status": 0
+               },
+               "details": [
+                  {
+                     "itemId":2,
+                     "userId":1
+                  },
+                  {
+                     "itemId":3,
+                     "userId":1
+                  }
+               ]
+            }
             fetch.Promise = Bluebird;
-            fetch('http://localhost:8080/transaction')
+            fetch('http://localhost:8080/transaction',
+               { method: 'POST', body: transactionWrapper })
                .then(res => res.text())
                .then(body => console.log('hello im spring' + body));
          }
