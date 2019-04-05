@@ -80,6 +80,11 @@ exports.addItem = async function(req, io) {
       (trade, err) => {
          console.log(trade);
          if(err) console.log(500, err);
+         var item = {
+            itemId: req.itemId,
+            userId: req.userId
+         }
+         io.emit('item-added', item);
       }
    )
 }
@@ -113,25 +118,18 @@ checkTradeStatus = async function(req, io) {
          console.log(users.length);
          if(users.length !== 2) {
             var transactionWrapper = {
-               "transaction": {
-                  "receiverId": req.receiverId,
-                  "donationPostId": -1,
-                  "status": 0
-               },
-               "details": [
-                  {
-                     "itemId":2,
-                     "userId":1
-                  },
-                  {
-                     "itemId":3,
-                     "userId":1
-                  }
-               ]
+               
             }
             fetch.Promise = Bluebird;
-            fetch('http://localhost:8080/transaction',
-               { method: 'POST', body: transactionWrapper })
+            fetch('http://localhost:8080/transaction', {
+               method: 'POST',
+               body: transactionWrapper,
+               headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization': req.token
+               }
+            })
                .then(res => res.text())
                .then(body => console.log('hello im spring' + body));
          }
