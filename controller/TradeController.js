@@ -139,6 +139,7 @@ checkTradeStatus = async function(req, io) {
 
             transactionWrapper.details = transactionWrapper.details.concat(c[0]);
             transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+
             console.log(transactionWrapper.details);
             fetch.Promise = Bluebird;
             fetch('http://localhost:8080/transaction', {
@@ -151,7 +152,10 @@ checkTradeStatus = async function(req, io) {
                }
             })
                .then(res => res.text())
-               .then(body => console.log('hello im spring' + body));
+               .then(body => {
+                  io.emit("trade-done", transactionWrapper)
+                  console.log('hello im spring' + body)
+               });
          }
          if(err) console.log(500, err);
       }
