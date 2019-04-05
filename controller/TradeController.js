@@ -40,7 +40,7 @@ exports.upsertTrade = async function(req, io) {
          console.log('create new room');
          createTrade(req, io);
       }
-      io.emit('room-ready');
+      io.emit('room-ready', req.room);
    })
 }
 
@@ -95,6 +95,11 @@ exports.removeItem = async function(req, io) {
       {'$pull': {'users.$.item': req.itemId}},
       (err, trade) => {
          if(err) console.log(500, err);
+         var item = {
+            itemId: req.itemId,
+            userId: req.userId
+         }
+         io.emit('item-removed', item);
       }
    )
 }
