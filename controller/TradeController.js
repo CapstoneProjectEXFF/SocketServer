@@ -117,18 +117,33 @@ exports.confirmTrade = async function(req, io) {
 
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
-   await Trade.find({$and:[{'room': req.room}, {'users.status': 1}]},
-      {'users': 1},
-      (err, users) => {
-         console.log(users.length);
-         if(users.length !== 2) {
+   await Trade.find({$and: [
+      {'room': req.room},
+      {"users": {$not: {$elemMatch: {status: 0}}}}
+   ]},
+      (err, trade) => {
+         if(trade.length === 1) {
+            var users = req.room.split('-').sort();
             var transactionWrapper = {
-               
+               "transaction": {
+                  "receiverId": users[0],
+                  "senderId": users[1]
+               },
+               "details": []
             }
+
+            var c = trade[0].users.map(u => 
+               u.item.map(i =>
+                  {return {"userId": u.userId, "itemId": i}}
+               ))
+
+            transactionWrapper.details = transactionWrapper.details.concat(c[0]);
+            transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+            console.log(transactionWrapper.details);
             fetch.Promise = Bluebird;
             fetch('http://localhost:8080/transaction', {
                method: 'POST',
-               body: transactionWrapper,
+               body: JSON.stringify(transactionWrapper),
                headers: {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
