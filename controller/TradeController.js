@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Trade = mongoose.model('Trade');
+var Item = mongoose.model('Item');
 var Socket = require('../bin/www');
 var io = Socket.io;
 var tradingSpace = Socket.tradingSpace;
@@ -84,7 +85,8 @@ exports.addItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         io.emit('item-added', item);
+         item.markItem(itemId, req.room);
+         io.to(req.room).emit('item-added', item);
       }
    )
 }
@@ -99,17 +101,18 @@ exports.removeItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         io.emit('item-removed', item);
+         item.unmarkItem(itemId, req.room);
+         io.to(req.room).emit('item-removed', item);
       }
    )
 }
 
 exports.confirmTrade = async function(req, io) {
-   console.log(`${req.userId} has confirmed`);
+   io.to(req.room).emit(`${req.userId} has confirmed`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 1},
       (err, trade) => {
-         checkTradeStatus(req);
+         checkTradeStatus(req, io);
          if(err) console.log(500, err);
       }
    )
@@ -117,6 +120,7 @@ exports.confirmTrade = async function(req, io) {
 
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
+   io.to(req.room).emit('user-accepted-trade', `${req.userId} has confirmed`);
    await Trade.find({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
@@ -154,7 +158,7 @@ checkTradeStatus = async function(req, io) {
                .then(res => res.text())
                .then(body => {
                   io.emit("trade-done", transactionWrapper)
-                  console.log('hello im spring' + body)
+                  console.log('hello im spring: ' + body)
                });
          }
          if(err) console.log(500, err);

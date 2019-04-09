@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const itemSchema = new mongoose.Schema({
-   usersId: String,
    itemId: String,
    rooms: [String],
-   status: Number
+   status: Number,
+   like: [String]
 }, {
    collection: 'Item',
    max: 1000

@@ -41,5 +41,7 @@ mongoose.connect(dbUrl, (err) => {
 //ItemRoute(app);
 var TradeRoute = require('./routes/TradeRoute');
 TradeRoute(app);
+var ItemRoute = require('./routes/ItemRoute');
+ItemRoute(app);
 
 module.exports = app;
