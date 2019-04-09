@@ -120,7 +120,7 @@ exports.confirmTrade = async function(req, io) {
 
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
-   io.to(req.room).emit('user-accepted-trade', `${req.userId} has confirmed`);
+   io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
    await Trade.find({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
