@@ -6,6 +6,7 @@ const tradeSchema = new mongoose.Schema({
       userName: String,
       item: [String],
       avatar: String,
+      qrCode: String,
       status: {
          type: Number,
          default: function() {return 0;}

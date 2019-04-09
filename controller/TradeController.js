@@ -6,6 +6,7 @@ var io = Socket.io;
 var tradingSpace = Socket.tradingSpace;
 var item = require('../controller/ItemController');
 var fetch = require('node-fetch');
+var qr = require('qr-image');
 var Bluebird = require('bluebird');
 
 exports.getUserTrading = async function(req, res) {
@@ -112,7 +113,7 @@ exports.removeItem = async function(req, io) {
 exports.confirmTrade = async function(req, io) {
    io.to(req.room).emit(`${req.userId} has confirmed`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'users.$.status': 1},
+      {'users.$.status': 1, 'status': 1},
       (err, trade) => {
          checkTradeStatus(req, io);
          if(err) console.log(500, err);
@@ -126,7 +127,7 @@ checkTradeStatus = async function(req, io) {
    await Trade.find({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
-   ]},
+   ]}, {'qrCode': req.room + new Date(), 'status': 2}, 
       (err, trade) => {
          if(trade.length === 1) {
             var users = req.room.split('-').sort();
@@ -171,7 +172,7 @@ checkTradeStatus = async function(req, io) {
 exports.cancelTrade = async function(req, io) {
    console.log(`${req.userId} has canceled`);
    await Trade.update({'room': req.room},
-      {'tradeStatus': -1},
+      {'status': -1},
       (err, trade) => {
          if(err) console.log(500, err);
       }
