@@ -4,7 +4,9 @@ module.exports = function (app) {
    //user send message
    app.route('/trading')
       .get(trading.getUserTrading)
-      .post(trading.createTrade);
+      .post(trading.upsertTrade);
+   app.route('/room')
+      .get(trading.getRoomById);
    app.route('/trading/msg')
       .get(trading.getRoomMessage);
 }

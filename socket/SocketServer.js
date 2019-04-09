@@ -1,21 +1,20 @@
 var trading = require('../controller/TradeController');
-var message = require('../controller/MessageController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
       console.log('user connected');
 
-      socket.on('room', function(room) {
-         socket.join(room);
-         console.log(`Room ${room} create`);
-         //var trade = {userA: 'hieu', userB: 'thang', room: room};
-         trading.createTrade(room, io);
+      socket.on('get-room', function(room) {
+         socket.join(room.room);
+         console.log(`join room ${room.room}`);
+         trading.upsertTrade(room, io);
       })
 
       socket.on('send-msg', function(data) {
          console.log('msg: ' + data);
          trading.sendMessage(data);
-         io.emit('send-msg', data.msg);
+         //io.to(data.room).emit('send-msg', data);
+         io.emit('send-msg', data);
       });
 
       socket.on('send-req', function(data) {
@@ -25,13 +24,17 @@ exports.ioOperate = function(io) {
       socket.on('add-item', function(data) {
          trading.addItem(data, io);
       })
-      
+
       socket.on('remove-item', function(data) {
          trading.removeItem(data, io);
       })
 
-      socket.on('create-trade', function(room) {
-         socket.join(room);
+      socket.on('cancel-trade', function(data) {
+         trading.cancelTrade(data, io);
+      })
+
+      socket.on('confirm-trade', function(data) {
+         trading.confirmTrade(data, io);
       })
    })
 }

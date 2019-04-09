@@ -9,7 +9,12 @@
          $(function () {
             //var socket = io("http://35.247.191.68:3000/");
             var socket = io();
-            socket.emit('room', 'hieu-thang');
+            var roomName = {
+               userA: 'hieu',
+               userB: 'thang',
+               room:'hieu-thang'
+            }
+            socket.emit('room', roomName);
             $('form').submit(function(e) {
                e.preventDefault(); // prevents page reloading
                var message = {
@@ -26,12 +31,12 @@
                //   alert(msg)
             });
             addItem = function(itemId, room) {
-              var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
-              socket.emit('add-item', tradeInfo);
+               var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
+               socket.emit('add-item', tradeInfo);
             }
             rmItem = function(itemId, room) {
-              var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
-              socket.emit('rm-item', tradeInfo);
+               var tradeInfo = {userId: 'hieu', itemId: itemId, room: 'hieu-thang'};
+               socket.emit('rm-item', tradeInfo);
             }
          });
       </script>

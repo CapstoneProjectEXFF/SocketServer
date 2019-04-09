@@ -1,13 +1,26 @@
 const mongoose = require('mongoose');
 
 const tradeSchema = new mongoose.Schema({
-   users: [{userId: String, item: [String]}],
+   users: [{
+      userId: String,
+      userName: String,
+      item: [String],
+      avatar: String,
+      qrCode: String,
+      status: {
+         type: Number,
+         default: function() {return 0;}
+      }
+   }],
    messages: [{
       sender: String,
       msg: String
-      //   sendedTime: Date
+      //   sentTime: Date
    }],
    room: String,
+   activeTime: Date,
+   transferTime: Date,
+   transferLocation: String,
    status: Number
 }, {
    collection: 'Trade',

@@ -1,5 +1,6 @@
 var express = require('express');
 var path = require('path');
+var cors = require('cors');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
@@ -7,6 +8,7 @@ var dbUrl = 'mongodb://kenkej:a123456@ds123584.mlab.com:23584/exff';
 
 var app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(logger('dev'));
@@ -18,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //schema impl and connect to mlab
 var mongoose = require('mongoose');
 var
-   Message = require('./model/MessageModel');
+   Item = require('./model/ItemModel');
    Trade = require('./model/TradeModel');
 
 mongoose.connect(dbUrl, (err) => {
@@ -35,9 +37,11 @@ mongoose.connect(dbUrl, (err) => {
 //});
 
 //route impl
-var MessageRoute = require('./routes/MessageRoute');
-MessageRoute(app);
+//var ItemRoute = require('./routes/MessageRoute');
+//ItemRoute(app);
 var TradeRoute = require('./routes/TradeRoute');
 TradeRoute(app);
+var ItemRoute = require('./routes/ItemRoute');
+ItemRoute(app);
 
 module.exports = app;
