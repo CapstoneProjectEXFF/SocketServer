@@ -13,7 +13,8 @@ exports.ioOperate = function(io) {
       socket.on('send-msg', function(data) {
          console.log('msg: ' + data);
          trading.sendMessage(data);
-         io.to(data.room).emit('send-msg', data);
+         //io.to(data.room).emit('send-msg', data);
+         io.emit('send-msg', data);
       });
 
       socket.on('send-req', function(data) {
@@ -27,7 +28,7 @@ exports.ioOperate = function(io) {
       socket.on('remove-item', function(data) {
          trading.removeItem(data, io);
       })
-      
+
       socket.on('cancel-trade', function(data) {
          trading.cancelTrade(data, io);
       })

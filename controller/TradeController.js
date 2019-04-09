@@ -86,7 +86,8 @@ exports.addItem = async function(req, io) {
             userId: req.userId
          }
          item.markItem(itemId, req.room);
-         io.to(req.room).emit('item-added', item);
+         //io.to(req.room).emit('item-added', item);
+         io.emit('item-added', item);
       }
    )
 }
@@ -102,7 +103,8 @@ exports.removeItem = async function(req, io) {
             userId: req.userId
          }
          item.unmarkItem(itemId, req.room);
-         io.to(req.room).emit('item-removed', item);
+         //io.to(req.room).emit('item-removed', item);
+         io.emit('item-removed', item);
       }
    )
 }
