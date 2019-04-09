@@ -51,7 +51,7 @@ createTrade = async function(roomInfo, io) {
       users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
       message: [], room: roomInfo.room,
       activeTime: new Date(),
-      status: 1
+      status: 0
    };
    var trade = new Trade(tradeInfo);
    await trade.save((err) => {
@@ -86,8 +86,6 @@ exports.addItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         item.markItem(itemId, req.room);
-         //io.to(req.room).emit('item-added', item);
          io.emit('item-added', item);
       }
    )
@@ -103,15 +101,12 @@ exports.removeItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         item.unmarkItem(itemId, req.room);
-         //io.to(req.room).emit('item-removed', item);
          io.emit('item-removed', item);
       }
    )
 }
 
 exports.confirmTrade = async function(req, io) {
-   io.to(req.room).emit(`${req.userId} has confirmed`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 1, 'status': 1},
       (err, trade) => {
@@ -127,7 +122,7 @@ checkTradeStatus = async function(req, io) {
    await Trade.find({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
-   ]}, {'qrCode': req.room + new Date(), 'status': 2}, 
+   ]}, 
       (err, trade) => {
          if(trade.length === 1) {
             var users = req.room.split('-').sort();
@@ -149,7 +144,7 @@ checkTradeStatus = async function(req, io) {
 
             console.log(transactionWrapper.details);
             fetch.Promise = Bluebird;
-            fetch('http://localhost:8080/transaction', {
+            fetch('http://35.247.191.68:8080/transaction', {
                method: 'POST',
                body: JSON.stringify(transactionWrapper),
                headers: {
