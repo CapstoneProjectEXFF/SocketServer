@@ -176,7 +176,7 @@ checkTradeStatus = async function(req, io) {
 exports.resetTrade = async function(req, io) {
    console.log(`${req.userId} has reset`);
    await Trade.update({'room': req.room},
-      {'status': 0, 'users.item': []},
+      {'status': 0, $set: {'users.item': []}},
       (err, trade) => {
          if(err) console.log(500, err);
          io.emit('trade-reseted', req.room);
