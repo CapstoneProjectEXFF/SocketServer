@@ -175,6 +175,7 @@ exports.cancelTrade = async function(req, io) {
       {'status': -1},
       (err, trade) => {
          if(err) console.log(500, err);
+         io.emit('trade-canceled', req.room);
       }
    )
 }
