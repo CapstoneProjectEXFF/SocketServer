@@ -164,7 +164,7 @@ checkTradeStatus = async function(req, io) {
             })
                .then(res => res.text())
                .then(body => {
-                  io.emit("trade-done", transactionWrapper)
+                  io.emit("trade-done", req.room);
                   console.log('hello im spring: ' + body)
                });
          }
