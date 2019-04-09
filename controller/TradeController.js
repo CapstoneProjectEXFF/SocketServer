@@ -108,7 +108,17 @@ exports.removeItem = async function(req, io) {
 
 exports.confirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'users.$.status': 1, 'status': 1},
+      {'users.$.status': 1},
+      (err, trade) => {
+         checkTradeStatus(req, io);
+         if(err) console.log(500, err);
+      }
+   )
+}
+
+exports.unconfirmTrade = async function(req, io) {
+   await Trade.update({'room': req.room, 'users.userId': req.userId},
+      {'users.$.status': 0, 'status': 0},
       (err, trade) => {
          checkTradeStatus(req, io);
          if(err) console.log(500, err);
@@ -119,11 +129,10 @@ exports.confirmTrade = async function(req, io) {
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
    io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
-   await Trade.find({$and: [
+   await Trade.findOneAndUpdate({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
-   ]}, 
-      (err, trade) => {
+   ]}, {"status": 1}, (err, trade) => {
          if(trade.length === 1) {
             var users = req.room.split('-').sort();
             var transactionWrapper = {
@@ -164,13 +173,13 @@ checkTradeStatus = async function(req, io) {
    )
 }
 
-exports.cancelTrade = async function(req, io) {
-   console.log(`${req.userId} has canceled`);
+exports.resetTrade = async function(req, io) {
+   console.log(`${req.userId} has reset`);
    await Trade.update({'room': req.room},
-      {'status': -1},
+      {'status': 0, 'users.item': []},
       (err, trade) => {
          if(err) console.log(500, err);
-         io.emit('trade-canceled', req.room);
+         io.emit('trade-reseted', req.room);
       }
    )
 }
