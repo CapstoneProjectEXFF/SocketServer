@@ -168,7 +168,7 @@ checkTradeStatus = async function(req, io) {
                .then(body => {
                   //tra ve transaction id va room name
                   var result = {
-                     transactionId:  body.transactionId,
+                     transactionId:  body.message,
                      room: req.room
                   }
                   io.emit("trade-done", result);
