@@ -57,7 +57,6 @@ createTrade = async function(roomInfo, io) {
    await trade.save((err) => {
       if(err) console.log(500);
       io.emit('create-trade', roomInfo.room);
-      console.log('namespace name: ' + Socket.tradingSpace.name);
    })
 }
 
@@ -83,6 +82,7 @@ exports.addItem = async function(req, io) {
          console.log(trade);
          if(err) console.log(500, err);
          var item = {
+            room: req.room,
             itemId: req.itemId,
             userId: req.userId
          }
@@ -98,6 +98,7 @@ exports.removeItem = async function(req, io) {
       (err, trade) => {
          if(err) console.log(500, err);
          var item = {
+            room: req.room,
             itemId: req.itemId,
             userId: req.userId
          }
@@ -128,7 +129,8 @@ exports.unconfirmTrade = async function(req, io) {
 
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
-   io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
+   //io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
+   io.emit('user-accepted-trade', req.room);
    await Trade.findOneAndUpdate({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
@@ -164,7 +166,12 @@ checkTradeStatus = async function(req, io) {
             })
                .then(res => res.text())
                .then(body => {
-                  io.emit("trade-done", req.room);
+                  //tra ve transaction id va room name
+                  var result = {
+                     transactionId:  body.transactionId,
+                     room: req.room
+                  }
+                  io.emit("trade-done", result);
                   console.log('hello im spring: ' + body)
                });
          }
@@ -176,7 +183,7 @@ checkTradeStatus = async function(req, io) {
 exports.resetTrade = async function(req, io) {
    console.log(`${req.userId} has reset`);
    await Trade.update({'room': req.room},
-      {'status': 0, $set: {'users.item': []}},
+      {$set: {"users.$[].item": []}},
       (err, trade) => {
          if(err) console.log(500, err);
          io.emit('trade-reseted', req.room);
