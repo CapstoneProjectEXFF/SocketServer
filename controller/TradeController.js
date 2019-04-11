@@ -76,7 +76,7 @@ exports.sendMessage = async function(req, io) {
 
 exports.addItem = async function(req, io) {
    console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
-   await Trade.update({'room': req.room, 'users.userId': req.userId},
+   await Trade.update({'room': req.room, 'users.userId': req.userId, 'status': 0},
       {'$addToSet': {'users.$.item': [req.itemId]}},
       (trade, err) => {
          console.log(trade);
@@ -121,7 +121,7 @@ exports.unconfirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 0, 'status': 0},
       (err, trade) => {
-         checkTradeStatus(req, io);
+         io.emit('', req.room);
          if(err) console.log(500, err);
       }
    )
@@ -129,12 +129,16 @@ exports.unconfirmTrade = async function(req, io) {
 
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
-   //io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
-   io.emit('user-accepted-trade', req.room);
+   var result = {
+      userId: req.userId,
+      room: req.room
+   }
+   io.emit('user-accepted-trade', result);
    await Trade.findOneAndUpdate({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
    ]}, {"status": 1}, (err, trade) => {
+      if(trade === null) return;
          if(trade.length === 1) {
             var users = req.room.split('-').sort();
             var transactionWrapper = {
