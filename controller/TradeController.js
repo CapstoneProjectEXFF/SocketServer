@@ -139,48 +139,48 @@ checkTradeStatus = async function(req, io) {
       {"users": {$not: {$elemMatch: {status: 0}}}}
    ]}, {"status": 1}, (err, trade) => {
       if(trade === null) return;
-         if(trade.length === 1) {
-            var users = req.room.split('-').sort();
-            var transactionWrapper = {
-               "transaction": {
-                  "receiverId": users[0],
-                  "senderId": users[1]
-               },
-               "details": []
-            }
-
-            var c = trade[0].users.map(u => 
-               u.item.map(i =>
-                  {return {"userId": u.userId, "itemId": i}}
-               ))
-
-            transactionWrapper.details = transactionWrapper.details.concat(c[0]);
-            transactionWrapper.details = transactionWrapper.details.concat(c[1]);
-
-            console.log(transactionWrapper.details);
-            fetch.Promise = Bluebird;
-            fetch('http://35.247.191.68:8080/transaction', {
-               method: 'POST',
-               body: JSON.stringify(transactionWrapper),
-               headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                  'Authorization': req.token
-               }
-            })
-               .then(res => res.text())
-               .then(body => {
-                  //tra ve transaction id va room name
-                  var result = {
-                     transactionId:  body.message,
-                     room: req.room
-                  }
-                  io.emit("trade-done", result);
-                  console.log('hello im spring: ' + body)
-               });
+      if(trade.length === 1) {
+         var users = req.room.split('-').sort();
+         var transactionWrapper = {
+            "transaction": {
+               "receiverId": users[0],
+               "senderId": users[1]
+            },
+            "details": []
          }
-         if(err) console.log(500, err);
+
+         var c = trade[0].users.map(u => 
+            u.item.map(i =>
+               {return {"userId": u.userId, "itemId": i}}
+            ))
+
+         transactionWrapper.details = transactionWrapper.details.concat(c[0]);
+         transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+
+         console.log(transactionWrapper.details);
+         fetch.Promise = Bluebird;
+         fetch('http://35.247.191.68:8080/transaction', {
+            method: 'POST',
+            body: JSON.stringify(transactionWrapper),
+            headers: {
+               'Accept': 'application/json',
+               'Content-Type': 'application/json',
+               'Authorization': req.token
+            }
+         })
+            .then(res => res.text())
+            .then(body => {
+               //tra ve transaction id va room name
+               var result = {
+                  transactionId:  body.message,
+                  room: req.room
+               }
+               io.emit("trade-done", result);
+               console.log('hello im spring: ' + body)
+            });
       }
+      if(err) console.log(500, err);
+   }
    )
 }
 
