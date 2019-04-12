@@ -37,7 +37,6 @@ exports.upsertTrade = async function(req, io) {
       {"users.userId": users[1]}
    ]}, {"activeTime": new Date()} , function(err, trade) {
       if (err) console.log(500);
-      console.log(trade);
       if (trade.n === 0) {
          console.log('create new room');
          createTrade(req, io);
@@ -75,7 +74,6 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.addItem = async function(req, io) {
-   console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0},
       (trade, err) => {
@@ -87,12 +85,13 @@ exports.addItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-added', item);
+         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been added`})
+         console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
 }
 
 exports.removeItem = async function(req, io) {
-   console.log(`item ${req.itemId} removed from room ${req.room}`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$pull': {'users.$.item': req.itemId}, 'status': 0},
       (err, trade) => {
@@ -103,6 +102,8 @@ exports.removeItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-removed', item);
+         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been removed`})
+         console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
 }
@@ -134,61 +135,63 @@ checkTradeStatus = async function(req, io) {
       room: req.room
    }
    io.emit('user-accepted-trade', result);
+   io.emit('msg', {sender: -1, msg: `${req.userId} has confirmed`})
    await Trade.findOne({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
    ]}, (err, trade) => {
       if(trade === null) return;
-         var users = req.room.split('-').sort();
-         var transactionWrapper = {
-            "transaction": {
-               "receiverId": users[0],
-               "senderId": users[1]
-            },
-            "details": []
+      var users = req.room.split('-').sort();
+      var transactionWrapper = {
+         "transaction": {
+            "receiverId": users[0],
+            "senderId": users[1]
+         },
+         "details": []
+      }
+
+      var c = trade.users.map(u => 
+         u.item.map(i =>
+            {return {"userId": u.userId, "itemId": i}}
+         ))
+
+      transactionWrapper.details = transactionWrapper.details.concat(c[0]);
+      transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+
+      console.log(transactionWrapper.details);
+      fetch.Promise = Bluebird;
+      fetch('http://35.247.191.68:8080/transaction', {
+         method: 'POST',
+         body: JSON.stringify(transactionWrapper),
+         headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': req.token
          }
-
-         var c = trade.users.map(u => 
-            u.item.map(i =>
-               {return {"userId": u.userId, "itemId": i}}
-            ))
-
-         transactionWrapper.details = transactionWrapper.details.concat(c[0]);
-         transactionWrapper.details = transactionWrapper.details.concat(c[1]);
-
-         console.log(transactionWrapper.details);
-         fetch.Promise = Bluebird;
-         fetch('http://35.247.191.68:8080/transaction', {
-            method: 'POST',
-            body: JSON.stringify(transactionWrapper),
-            headers: {
-               'Accept': 'application/json',
-               'Content-Type': 'application/json',
-               'Authorization': req.token
+      })
+         .then(res => res.text())
+         .then(body => {
+            var bodyRes = JSON.parse(body);
+            var transInfo = {
+               transactionId:  bodyRes.message,
+               room: req.room
             }
-         })
-            .then(res => res.text())
-            .then(body => {
-               var bodyRes = JSON.parse(body);
-               var transInfo = {
-                  transactionId:  bodyRes.message,
-                  room: req.room
-               }
-               io.emit("trade-done", transInfo);
-               console.log('hello im spring: ' + bodyRes.message);
-            });
+            io.emit("trade-done", transInfo);
+            console.log('hello im spring: ' + bodyRes.message);
+         });
       if(err) console.log(500, err);
    }
    )
 }
 
 exports.resetTrade = async function(req, io) {
-   console.log(`${req.userId} has reset`);
    await Trade.update({'room': req.room},
       {$set: {"users.$[].item": []}, 'status': 0},
       (err, trade) => {
          if(err) console.log(500, err);
          io.emit('trade-reseted', req.room);
+         io.emit('msg', {sender: -1, msg: `${req.userId} has reseted the trade`})
+         console.log(`${req.userId} has reset`);
       }
    )
 }
