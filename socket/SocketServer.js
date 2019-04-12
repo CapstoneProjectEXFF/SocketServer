@@ -38,7 +38,7 @@ exports.ioOperate = function(io) {
       })
 
       socket.on('unconfirm-trade', function(data) {
-         trading.confirmTrade(data, io);
+         trading.unconfirmTrade(data, io);
       })
    })
 }
