@@ -122,7 +122,7 @@ exports.unconfirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 0},
       (err, trade) => {
-         io.emit('trade-unconfirmed', req.room);
+         io.emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          if(err) console.log(500, err);
       }
    )
