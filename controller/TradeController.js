@@ -85,7 +85,7 @@ exports.addItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-added', item);
-         io.emit('send-msg', {sender: -5: , msg: req.itemId})
+         io.emit('send-msg', {sender: -5, msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
