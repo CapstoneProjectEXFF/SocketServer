@@ -83,7 +83,7 @@ exports.addItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-added', item);
-         io.emit('send-msg', {sender: -5, msg: req.itemId})
+         io.emit('send-msg', {sender: -5, msg: `${req.userId},${req.itemId}`})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
@@ -100,7 +100,7 @@ exports.removeItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-removed', item);
-         io.emit('send-msg', {sender: -6, msg: req.itemId})
+         io.emit('send-msg', {sender: -6, msg: `${req.userId},${req.itemId}`})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
