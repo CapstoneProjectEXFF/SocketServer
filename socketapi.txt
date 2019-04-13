@@ -1,0 +1,8 @@
+1. room create
+emit: get-room {room}
+on: room-ready => {room}
+2. send msg
+emit: send-msg
+on: send-msg
+3. add item
+emit: 

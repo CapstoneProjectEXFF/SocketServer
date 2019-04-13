@@ -37,7 +37,6 @@ exports.upsertTrade = async function(req, io) {
       {"users.userId": users[1]}
    ]}, {"activeTime": new Date()} , function(err, trade) {
       if (err) console.log(500);
-      console.log(trade);
       if (trade.n === 0) {
          console.log('create new room');
          createTrade(req, io);
@@ -57,7 +56,6 @@ createTrade = async function(roomInfo, io) {
    await trade.save((err) => {
       if(err) console.log(500);
       io.emit('create-trade', roomInfo.room);
-      console.log('namespace name: ' + Socket.tradingSpace.name);
    })
 }
 
@@ -76,39 +74,43 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.addItem = async function(req, io) {
-   console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$addToSet': {'users.$.item': [req.itemId]}},
+      {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0},
       (trade, err) => {
          console.log(trade);
          if(err) console.log(500, err);
          var item = {
+            room: req.room,
             itemId: req.itemId,
             userId: req.userId
          }
          io.emit('item-added', item);
+         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been added`})
+         console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
 }
 
 exports.removeItem = async function(req, io) {
-   console.log(`item ${req.itemId} removed from room ${req.room}`);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$pull': {'users.$.item': req.itemId}},
+      {'$pull': {'users.$.item': req.itemId}, 'status': 0},
       (err, trade) => {
          if(err) console.log(500, err);
          var item = {
+            room: req.room,
             itemId: req.itemId,
             userId: req.userId
          }
          io.emit('item-removed', item);
+         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been removed`})
+         console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
 }
 
 exports.confirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'users.$.status': 1, 'status': 1},
+      {'users.$.status': 1},
       (err, trade) => {
          checkTradeStatus(req, io);
          if(err) console.log(500, err);
@@ -116,61 +118,80 @@ exports.confirmTrade = async function(req, io) {
    )
 }
 
-checkTradeStatus = async function(req, io) {
-   console.log(`${req.userId} has confirmed`);
-   io.to(req.room).emit('user-accepted-trade', `${req.userId}`);
-   await Trade.find({$and: [
-      {'room': req.room},
-      {"users": {$not: {$elemMatch: {status: 0}}}}
-   ]}, 
+exports.unconfirmTrade = async function(req, io) {
+   await Trade.update({'room': req.room, 'users.userId': req.userId},
+      {'users.$.status': 0},
       (err, trade) => {
-         if(trade.length === 1) {
-            var users = req.room.split('-').sort();
-            var transactionWrapper = {
-               "transaction": {
-                  "receiverId": users[0],
-                  "senderId": users[1]
-               },
-               "details": []
-            }
-
-            var c = trade[0].users.map(u => 
-               u.item.map(i =>
-                  {return {"userId": u.userId, "itemId": i}}
-               ))
-
-            transactionWrapper.details = transactionWrapper.details.concat(c[0]);
-            transactionWrapper.details = transactionWrapper.details.concat(c[1]);
-
-            console.log(transactionWrapper.details);
-            fetch.Promise = Bluebird;
-            fetch('http://35.247.191.68:8080/transaction', {
-               method: 'POST',
-               body: JSON.stringify(transactionWrapper),
-               headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                  'Authorization': req.token
-               }
-            })
-               .then(res => res.text())
-               .then(body => {
-                  io.emit("trade-done", transactionWrapper)
-                  console.log('hello im spring: ' + body)
-               });
-         }
+         io.emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          if(err) console.log(500, err);
       }
    )
 }
 
-exports.cancelTrade = async function(req, io) {
-   console.log(`${req.userId} has canceled`);
+checkTradeStatus = async function(req, io) {
+   console.log(`${req.userId} has confirmed`);
+   var result = {
+      userId: req.userId,
+      room: req.room
+   }
+   io.emit('user-accepted-trade', result);
+   io.emit('msg', {sender: -1, msg: `${req.userId} has confirmed`})
+   await Trade.findOne({$and: [
+      {'room': req.room},
+      {"users": {$not: {$elemMatch: {status: 0}}}}
+   ]}, (err, trade) => {
+      if(trade === null) return;
+      var users = req.room.split('-').sort();
+      var transactionWrapper = {
+         "transaction": {
+            "receiverId": users[0],
+            "senderId": users[1]
+         },
+         "details": []
+      }
+
+      var c = trade.users.map(u => 
+         u.item.map(i =>
+            {return {"userId": u.userId, "itemId": i}}
+         ))
+
+      transactionWrapper.details = transactionWrapper.details.concat(c[0]);
+      transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+
+      console.log(transactionWrapper.details);
+      fetch.Promise = Bluebird;
+      fetch('http://35.247.191.68:8080/transaction', {
+         method: 'POST',
+         body: JSON.stringify(transactionWrapper),
+         headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': req.token
+         }
+      })
+         .then(res => res.text())
+         .then(body => {
+            var bodyRes = JSON.parse(body);
+            var transInfo = {
+               transactionId:  bodyRes.message,
+               room: req.room
+            }
+            io.emit("trade-done", transInfo);
+            console.log('hello im spring: ' + bodyRes.message);
+         });
+      if(err) console.log(500, err);
+   }
+   )
+}
+
+exports.resetTrade = async function(req, io) {
    await Trade.update({'room': req.room},
-      {'status': -1},
+      {$set: {"users.$[].item": []}, 'status': 0},
       (err, trade) => {
          if(err) console.log(500, err);
-         io.emit('trade-canceled', req.room);
+         io.emit('trade-reseted', req.room);
+         io.emit('msg', {sender: -1, msg: `${req.userId} has reseted the trade`})
+         console.log(`${req.userId} has reset`);
       }
    )
 }
