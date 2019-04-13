@@ -3,10 +3,8 @@ var Trade = mongoose.model('Trade');
 var Item = mongoose.model('Item');
 var Socket = require('../bin/www');
 var io = Socket.io;
-var tradingSpace = Socket.tradingSpace;
 var item = require('../controller/ItemController');
 var fetch = require('node-fetch');
-var qr = require('qr-image');
 var Bluebird = require('bluebird');
 
 exports.getUserTrading = async function(req, res) {
@@ -39,7 +37,7 @@ exports.upsertTrade = async function(req, io) {
       if (err) console.log(500);
       if (trade.n === 0) {
          console.log('create new room');
-         createTrade(req, io);
+         createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
       }
       io.emit('room-ready', req.room);
    })
