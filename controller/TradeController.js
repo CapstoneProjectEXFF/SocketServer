@@ -85,7 +85,7 @@ exports.addItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-added', item);
-         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been added`})
+         io.emit('send-msg', {sender: -5: , msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
@@ -102,7 +102,7 @@ exports.removeItem = async function(req, io) {
             userId: req.userId
          }
          io.emit('item-removed', item);
-         io.emit('msg', {sender: -1, msg: `item ${req.itemId} has been removed`})
+         io.emit('send-msg', {sender: -6, msg: req.itemId})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
@@ -123,6 +123,7 @@ exports.unconfirmTrade = async function(req, io) {
       {'users.$.status': 0},
       (err, trade) => {
          io.emit('trade-unconfirmed', {room: req.room, userId: req.userId});
+         io.emit('send-msg', {sender: -2, msg: req.userId})
          if(err) console.log(500, err);
       }
    )
@@ -135,7 +136,7 @@ checkTradeStatus = async function(req, io) {
       room: req.room
    }
    io.emit('user-accepted-trade', result);
-   io.emit('msg', {sender: -1, msg: `${req.userId} has confirmed`})
+   io.emit('send-msg', {sender: -1, msg: req.userId})
    await Trade.findOne({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
@@ -177,6 +178,7 @@ checkTradeStatus = async function(req, io) {
                room: req.room
             }
             io.emit("trade-done", transInfo);
+            io.emit('send-msg', {sender: -4, msg: req.room})
             console.log('hello im spring: ' + bodyRes.message);
          });
       if(err) console.log(500, err);
@@ -190,7 +192,7 @@ exports.resetTrade = async function(req, io) {
       (err, trade) => {
          if(err) console.log(500, err);
          io.emit('trade-reseted', req.room);
-         io.emit('msg', {sender: -1, msg: `${req.userId} has reseted the trade`})
+         io.emit('send-msg', {sender: -3, msg: req.room})
          console.log(`${req.userId} has reset`);
       }
    )
