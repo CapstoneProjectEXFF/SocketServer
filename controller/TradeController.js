@@ -4,6 +4,7 @@ var Item = mongoose.model('Item');
 var Socket = require('../bin/www');
 var io = Socket.io;
 var item = require('../controller/ItemController');
+var trade = require('../controller/TradeController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
 
@@ -208,7 +209,7 @@ checkTradeStatus = async function(req, io) {
             io.to(req.room).emit("trade-done", transInfo);
             io.to(req.room).emit('send-msg', {sender: -4, msg: req.room})
             console.log('hello im spring: ' + bodyRes.message);
-            resetTrade(req, io);
+            trade.resetTrade(req, io);
          });
       if(err) console.log(500, err);
    }
@@ -226,4 +227,5 @@ exports.resetTrade = async function(req, io) {
       }
    )
 }
+
 
