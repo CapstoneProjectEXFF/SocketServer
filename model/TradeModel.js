@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const tradeSchema = new mongoose.Schema({
    users: [{
       userId: String,
-      userName: String,
+      fullName: String,
       item: [String],
       avatar: String,
       qrCode: String,

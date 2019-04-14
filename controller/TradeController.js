@@ -43,15 +43,38 @@ exports.upsertTrade = async function(req, io) {
    })
 }
 
+getUserFromAPI = async function(userId) {
+   fetch.Promise = Bluebird;
+   return await fetch(`http://35.247.191.68:8080/user/${userId}`, {
+      method: 'GET',
+      headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json'
+      }
+   })
+      .then(res => res.text())
+      .then(body => {
+         return Promise.resolve(JSON.parse(body));
+      })
+} 
+
 createTrade = async function(roomInfo, io) {
+   //var userA = await getUserFromAPI(roomInfo.userA);
+   var res = await fetch(`http://35.247.191.68:8080/user/${roomInfo.userA}`);
+   var userA = await res.json();
+   var res2 = await fetch(`http://35.247.191.68:8080/user/${roomInfo.userB}`);
+   var userB = await res2.json();
    var tradeInfo = {
-      users: [{userId: roomInfo.userA}, {userId: roomInfo.userB}],
+      //users: [{userId: roomInfo.userA},
+      //   {userId: roomInfo.userB}],
+      users: [userA, userB],
       message: [], room: roomInfo.room,
       activeTime: new Date(),
       status: 0
    };
    var trade = new Trade(tradeInfo);
    await trade.save((err) => {
+      console.log('now i save');
       if(err) console.log(500);
       io.emit('create-trade', roomInfo.room);
    })
@@ -178,6 +201,7 @@ checkTradeStatus = async function(req, io) {
             io.emit("trade-done", transInfo);
             io.emit('send-msg', {sender: -4, msg: req.room})
             console.log('hello im spring: ' + bodyRes.message);
+            resetTrade(req, io);
          });
       if(err) console.log(500, err);
    }
