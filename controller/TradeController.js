@@ -40,8 +40,8 @@ exports.upsertTrade = async function(req, io) {
       if (trade === null) {
          console.log('create new room');
          roomName = await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
+         io.emit('create-trade', roomInfo.room);
       } else { roomName = trade.room; console.log(`update room ${roomName}`)}
-      io.emit('room-ready', req.room);
    })
    return await Promise.resolve(roomName);
 }
@@ -70,7 +70,7 @@ createTrade = async function(roomInfo, io) {
    userA.userId = roomInfo.userA;
    userA.status = 0;
    userB.userId = roomInfo.userB;
-   userB.status = 1;
+   userB.status = 0;
    var tradeInfo = {
       //users: [{userId: roomInfo.userA},
       //   {userId: roomInfo.userB}],
@@ -84,7 +84,6 @@ createTrade = async function(roomInfo, io) {
       console.log('now i save');
       if(err) console.log(500);
    })
-   io.emit('create-trade', roomInfo.room);
    return await Promise.resolve(roomInfo.room);
 }
 
