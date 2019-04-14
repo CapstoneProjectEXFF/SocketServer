@@ -30,17 +30,20 @@ exports.getRoomMessage = async function(req, res) {
 
 exports.upsertTrade = async function(req, io) {
    var users = req.room.split('-');
-   await Trade.updateOne({$and: [
+   console.log(`${req.room} is required`);
+   var roomName = null;
+   await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
-   ]}, {"activeTime": new Date()} , function(err, trade) {
+   ]}, {"activeTime": new Date()} ,  async function(err, trade) {
       if (err) console.log(500);
-      if (trade.n === 0) {
+      if (trade === null) {
          console.log('create new room');
-         createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
-      }
+         roomName = await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
+      } else { roomName = trade.room; console.log(`update room ${roomName}`)}
       io.emit('room-ready', req.room);
    })
+   return await Promise.resolve(roomName);
 }
 
 getUserFromAPI = async function(userId) {
@@ -64,6 +67,10 @@ createTrade = async function(roomInfo, io) {
    var userA = await res.json();
    var res2 = await fetch(`http://35.247.191.68:8080/user/${roomInfo.userB}`);
    var userB = await res2.json();
+   userA.userId = roomInfo.userA;
+   userA.status = 0;
+   userB.userId = roomInfo.userB;
+   userB.status = 1;
    var tradeInfo = {
       //users: [{userId: roomInfo.userA},
       //   {userId: roomInfo.userB}],
@@ -76,8 +83,9 @@ createTrade = async function(roomInfo, io) {
    await trade.save((err) => {
       console.log('now i save');
       if(err) console.log(500);
-      io.emit('create-trade', roomInfo.room);
    })
+   io.emit('create-trade', roomInfo.room);
+   return await Promise.resolve(roomInfo.room);
 }
 
 exports.sendMessage = async function(req, io) {
