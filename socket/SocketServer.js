@@ -2,19 +2,20 @@ var trading = require('../controller/TradeController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
-      console.log('user connected');
+      console.log(`socket id ${socket.id}`);
 
-      socket.on('get-room', function(room) {
-         socket.join(room.room);
-         console.log(`join room ${room.room}`);
-         trading.upsertTrade(room, io);
+      socket.on('get-room', async function(room) {
+         console.log(`socket id ${socket.id}`);
+         var roomName = await trading.upsertTrade(room, io);
+         console.log(`join room ${roomName}`);
+         socket.join(roomName);
       })
 
       socket.on('send-msg', function(data) {
-         console.log('msg: ' + data);
          trading.sendMessage(data);
-         //io.to(data.room).emit('send-msg', data);
-         io.emit('send-msg', data);
+         console.log(Object.keys(socket.rooms));
+         io.to(data.room).emit('send-msg', data);
+         //io.to(socket.id).emit('send-msg', data);
       });
 
       socket.on('send-req', function(data) {

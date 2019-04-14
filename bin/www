@@ -32,8 +32,6 @@ server.on('listening', onListening);
 //Socket impl
 var io = require('socket.io')(server);
 exports.io = io;
-var tradingSpace = io.of('trading');
-exports.tradingSpace = tradingSpace;
 var Socket = require('../socket/SocketServer');
 Socket.ioOperate(io);
 
