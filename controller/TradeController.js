@@ -39,8 +39,8 @@ exports.upsertTrade = async function(req, io) {
    ]}, {"activeTime": new Date()} ,  async function(err, trade) {
       if (err) console.log(500);
       if (trade === null) {
-         console.log('create new room');
          roomName = await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
+         console.log(`create new room ${roomName}`);
          io.to(req.room).emit('create-trade', roomName);
       } else { roomName = trade.room; console.log(`update room ${roomName}`)}
    })
