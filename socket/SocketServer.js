@@ -7,9 +7,9 @@ exports.ioOperate = function(io) {
       socket.on('get-room', async function(room) {
          console.log(`socket id ${socket.id}`);
          var roomName = await trading.upsertTrade(room, io);
-         io.emit('room-ready', roomName);
-         console.log(`join room ${roomName}`);
          socket.join(roomName);
+         io.to(roomName).emit('room-ready', roomName);
+         console.log(`join room ${roomName}`);
       })
 
       socket.on('rejoin-room', function(room) {
