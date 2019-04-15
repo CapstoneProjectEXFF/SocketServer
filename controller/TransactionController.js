@@ -21,7 +21,8 @@ checkTransactionStatus = async function(data, io) {
    ]},
       (err, result) => {
          if(result === null) return;
-         io.to(data.socketId).emit('transaction-succeeded', data.transactionId);
+         console.log(`trao doi thanh cong ${result[0].transactionId}`);
+         io.to(data.socketId).emit('transaction-succeeded', result[0].transactionId);
       }
    )
 }
@@ -33,6 +34,7 @@ exports.scanQRCode = async function(data, io) {
          if(err) console.log(500, err);
          console.log(Object.keys(result));
          if (result.nModified === 1) {
+         console.log(`${data.user} scan thanh cong ${data.qrCode}`);
             io.to(data.socketId).emit('scan-succeeded',
                {transactionId: data.transactionId, userId: data.user});
          }
