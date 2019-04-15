@@ -31,7 +31,7 @@ checkTransactionStatus = async function(data, io) {
 exports.scanQRCode = async function(data, io) {
    await Transaction.findOneAndUpdate({'qrCode': data.qrCode},
       {'$pull': {users: data.userId}},
-      (err, result) => {
+      async (err, result) => {
          if(err) console.log(500, err);
          console.log(Object.keys(result));
          await Transaction.find({'qrCode': data.qrCode}, function(err, result) {
