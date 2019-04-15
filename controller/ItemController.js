@@ -39,9 +39,11 @@ exports.notifyItemUnavailable = async function(req, io) {
          console.log(`itemid ${req.itemId} itemFound ${item}`);
          var result = JSON.parse(item);
          result.rooms.map(i => {
-            tradeController.removeItem({
-               room: i, itemId: req.itemId,
-               userId: req.userId}, io);
+            if (i !== req.room) {
+               tradeController.removeItem({
+                  room: i, itemId: req.itemId,
+                  userId: req.userId}, io);
+            }
          })
       })
 }
