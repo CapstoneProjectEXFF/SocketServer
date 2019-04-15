@@ -37,8 +37,7 @@ exports.notifyItemUnavailable = async function(req, io) {
    await Item.find({'itemId': req.itemId},
       function(err, item) {
          console.log(`itemid ${req.itemId} itemFound ${item}`);
-         var result = JSON.parse(item);
-         result.rooms.map(i => {
+         item[0].rooms.map(i => {
             if (i !== req.room) {
                tradeController.removeItem({
                   room: i, itemId: req.itemId,
