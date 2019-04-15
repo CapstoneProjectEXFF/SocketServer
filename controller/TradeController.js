@@ -242,6 +242,7 @@ checkTradeStatus = async function(req, io) {
             var transInfo = {
                transactionId:  bodyRes.message,
                room: req.room,
+               users:[users[0], users[1]],
                qrCode: qrCode
             }
             transactionController.createTransaction(transInfo);

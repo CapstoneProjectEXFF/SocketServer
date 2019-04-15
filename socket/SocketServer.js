@@ -51,6 +51,7 @@ exports.ioOperate = function(io) {
       })
 
       socket.on('qr-scan', function(data) {
+         data.socketId = socket.id;
          transaction.scanQRCode(data);
       })
 
