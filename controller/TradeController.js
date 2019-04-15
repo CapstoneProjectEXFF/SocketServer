@@ -244,7 +244,8 @@ exports.resetTrade = async function(req, io) {
       {$set: {"users.$[].item": []}, 'users.$[].status': 0, 'status': 0},
       (err, trade) => {
          if(err) console.log(500);
-         io.to(req.room).emit('trade-reseted', req.room);
+         io.to(req.room).emit('trade-reseted',
+            {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -3, msg: req.room})
          console.log(`${req.userId} has reset`);
       }
