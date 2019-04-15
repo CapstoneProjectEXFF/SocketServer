@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-   senderId: Number,
-   receiverId: Number,
-   items: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Item'
-   }],
-   status: Number,
+   transactionId: Number,
+   users: [String],
+   qrCode: String,
+   status: {
+      type: Number,
+      default: function() {return 0;}
+   }
 }, {
    collection: 'Transaction',
    max: 1000

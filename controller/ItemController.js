@@ -8,10 +8,17 @@ exports.getSuggestedItems = async function(req, io) {
 }
 
 exports.markItem = async function(itemId, room) {
-   await Item.update({'itemId': itemId},
+   await Item.findOneAndUpdate({'itemId': itemId},
       {'$addToSet': {rooms: room}},
-      (err) => {
+      async (err, item) => {
          if(err) console.log(500, err);
+         if(item === null) {
+            var item = new Item({itemId: itemId, rooms:[room]});
+            await item.save((err) => {
+               console.log('item saved');
+               if(err) console.log(500);
+            })
+         }
       }
    )
 }

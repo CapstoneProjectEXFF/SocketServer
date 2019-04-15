@@ -1,14 +1,22 @@
 var trading = require('../controller/TradeController');
+var transaction = require('../controller/TransactionController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
       console.log(`socket id ${socket.id}`);
 
-      socket.on('get-room', async function(room) {
+      socket.on('get-room', function(room) {
          console.log(`socket id ${socket.id}`);
-         var roomName = await trading.upsertTrade(room, io);
-         console.log(`join room ${roomName}`);
-         socket.join(roomName);
+         //var roomName = await trading.upsertTrade(room, io);
+         trading.upsertTrade(room, io, socket);
+         //socket.join(roomName);
+         //io.to(roomName).emit('room-ready', roomName);
+         //console.log(`join room ${roomName}`);
+      })
+
+      socket.on('rejoin-room', function(room) {
+         console.log(`join room ${room.room}`);
+         socket.join(room.room);
       })
 
       socket.on('send-msg', function(data) {
@@ -41,6 +49,11 @@ exports.ioOperate = function(io) {
       socket.on('unconfirm-trade', function(data) {
          trading.unconfirmTrade(data, io);
       })
+
+      socket.on('qr-scan', function(data) {
+         transaction.scanQRCode(data);
+      })
+
    })
 }
 
