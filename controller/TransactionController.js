@@ -16,7 +16,7 @@ exports.createTransaction = async function(data, io) {
 
 checkTransactionStatus = async function(data, io) {
    await Transaction.find({$and: [
-      {'transactionId': data.transactionId},
+      {'qrCode': data.qrCode},
       {'users': {$size: 0}}
    ]},
       (err, result) => {
@@ -36,7 +36,7 @@ exports.scanQRCode = async function(data, io) {
             io.to(data.socketId).emit('scan-succeeded',
                {transactionId: data.transactionId, userId: data.user});
          }
-         checkTransactionStatus();
+         checkTransactionStatus(data, io);
       }
    )
 }
