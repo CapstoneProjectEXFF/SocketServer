@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-   senderId: Number,
-   receiverId: Number,
-   items: [{
+   transactionId: Number,
+   users: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Item'
    }],
+   qrCode: String,
    status: Number,
 }, {
    collection: 'Transaction',

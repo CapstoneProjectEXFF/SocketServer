@@ -7,6 +7,7 @@ var itemController = require('./ItemController');
 var tradeController = require('./TradeController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
+var crypto = require('crypto');
 
 exports.getUserTrading = async function(req, res) {
    await Trade.find({'users.userId': req.query.userId},
@@ -38,12 +39,15 @@ exports.upsertTrade = async function(req, io) {
    ]}, {"activeTime": new Date()} ,  async function(err, trade) {
       if (err) console.log(500);
       if (trade === null) {
-         roomName = await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
          console.log(`create new room ${roomName}`);
          io.to(req.room).emit('create-trade', roomName);
-      } else { roomName = trade.room; console.log(`update room ${roomName}`)}
+         return await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
+      } else {
+         roomName = trade.room;
+         console.log(`update room ${roomName}`)
+         return await Promise.resolve(roomName);
+      }
    })
-   return await Promise.resolve(roomName);
 }
 
 getUserFromAPI = async function(userId) {
