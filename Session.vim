@@ -18,7 +18,7 @@ badd +6 routes/TradeRoute.js
 badd +11 controller/ItemController.js
 badd +27 app.js
 badd +5 model/TransactionModel.js
-badd +40 controller/TransactionController.js
+badd +34 controller/TransactionController.js
 badd +17 /usr/share/nvim/runtime/doc/help.txt
 argglobal
 silent! argdel *
