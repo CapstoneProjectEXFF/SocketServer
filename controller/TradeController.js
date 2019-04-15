@@ -31,10 +31,10 @@ exports.getRoomMessage = async function(req, res) {
       });
 }
 
-exports.upsertTrade = async function(req, io) {
+exports.upsertTrade = async function(req, io, socket) {
    var users = req.room.split('-');
    var roomName; 
-   var existedRoom = await Trade.findOneAndUpdate({$and: [
+   await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
    ]}, {"activeTime": new Date()} , async function(err, trade) {
@@ -43,16 +43,17 @@ exports.upsertTrade = async function(req, io) {
          roomName = await createTrade({room: req.room,
             userA: users[0], userB: users[1]}, io)
          console.log(`create new room ${roomName}`);
+         socket.join(roomName);
+         io.to(roomName).emit('room-ready', roomName);
+         console.log(`join room ${roomName}`);
       } else {
          roomName = trade.room;
+         socket.join(roomName);
+         io.to(roomName).emit('room-ready', roomName);
          console.log(`update room ${trade.room}`)
+         console.log(`join room ${roomName}`);
       }
    })
-   if (existedRoom === null) {
-      return await Promise.resolve(roomName);
-   } else {
-      return await Promise.resolve(existedRoom.room);
-   }
 }
 
 getUserFromAPI = async function(userId) {
