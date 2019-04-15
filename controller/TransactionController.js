@@ -12,3 +12,13 @@ exports.createTransaction = async function(data, io) {
       if(err) console.log(500);
    })
 }
+
+exports.scanQRCode = async function(data, io) {
+   await Transaction.update({'transactionId': data.transactionId},
+      {'$addToSet': {users: data.user}},
+      (err) => {
+         if(err) console.log(500, err);
+      }
+   )
+}
+

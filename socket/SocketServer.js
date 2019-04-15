@@ -1,4 +1,5 @@
 var trading = require('../controller/TradeController');
+var transaction = require('../controller/TransactionController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
@@ -49,6 +50,7 @@ exports.ioOperate = function(io) {
       })
 
       socket.on('qr-scan', function(data) {
+         transaction.scanQRCode(data);
       })
 
    })
