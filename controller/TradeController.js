@@ -46,9 +46,10 @@ exports.upsertTrade = async function(req, io) {
       } else {
          roomName = trade.room;
          console.log(`update room ${roomName}`)
+         return await Promise.resolve(roomName);
       }
    })
-      return await Promise.resolve(roomName);
+   return await Promise.resolve(roomName);
 }
 
 getUserFromAPI = async function(userId) {
@@ -119,6 +120,7 @@ exports.addItem = async function(req, io) {
          }
          itemController.markItem(req.itemId, req.room);
          io.to(req.room).emit('item-added', item);
+         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
@@ -137,6 +139,7 @@ exports.removeItem = async function(req, io) {
          }
          itemController.unmarkItem(req.itemId, req.room);
          io.to(req.room).emit('item-removed', item);
+         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
@@ -219,7 +222,7 @@ checkTradeStatus = async function(req, io) {
                room: req.room,
                qrCode: qrCode
             }
-            transactionController.saveTransaction(transInfo);
+            transactionController.createTransaction(transInfo);
             io.to(req.room).emit("trade-done", transInfo);
             io.to(req.room).emit('send-msg', {sender: -4, msg: req.room})
             console.log('hello im spring: ' + bodyRes.message);
