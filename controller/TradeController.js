@@ -221,8 +221,7 @@ checkTradeStatus = async function(req, io) {
                   itemId: i,
                   userId: u.userId,
                   room: req.room,
-                  io: io
-               });
+               }, io);
                return {"userId": u.userId, "itemId": i}
             }
          ))
