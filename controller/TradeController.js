@@ -118,6 +118,7 @@ recheckRoom = async function(req, io) {
    ]}, {'users.$[].status': 0}
       , (err, trade) => {
          if(err) console.log(500);
+         if(trade === null) return;
          console.log(`co nguoi da chot ${trade}`);
          io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
       })
