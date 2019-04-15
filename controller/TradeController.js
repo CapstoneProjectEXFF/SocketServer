@@ -119,6 +119,7 @@ recheckRoom = async function(req, io) {
       , (err, trade) => {
          if(err) console.log(500);
          if(trade === null) return;
+         console.log(`co nguoi da chot ${trade}`);
          io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
       })
 }
@@ -145,7 +146,7 @@ exports.addItem = async function(req, io) {
 }
 
 exports.removeItem = async function(req, io) {
-   recheckRoom(req.room);
+   recheckRoom(req);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$pull': {'users.$.item': req.itemId},
          'status': 0, "activeTime": new Date()},
