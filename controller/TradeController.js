@@ -220,7 +220,8 @@ checkTradeStatus = async function(req, io) {
                itemController.notifyItemUnavailable({
                   itemId: i,
                   userId: u.userId,
-                  room: req.room
+                  room: req.room,
+                  io: io
                });
                return {"userId": u.userId, "itemId": i}
             }
