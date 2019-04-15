@@ -111,9 +111,24 @@ exports.sendMessage = async function(req, io) {
    )
 }
 
+recheckRoom = async function(req, io) {
+   await Trade.findOneAndUpdate({$and: [
+      {'room': req.room},
+      {"users": {$elemMatch: {status: 1}}}
+   ]}, {'users.$[].status': 0}
+      , (err, trade) => {
+         if(err) console.log(500);
+         if(trade === null) return;
+         console.log(`co nguoi da chot ${trade}`);
+         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
+      })
+}
+
 exports.addItem = async function(req, io) {
+   recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0, "activeTime": new Date()},
+      {'$addToSet': {'users.$.item': [req.itemId]},
+         'status': 0, "activeTime": new Date()},
       (err, trade) => {
          //console.log(trade);
          if(err) console.log(500);
@@ -122,9 +137,8 @@ exports.addItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         itemController.markItem(req.itemId, req.room);
+         itemController.markItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-added', item);
-         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
@@ -132,8 +146,10 @@ exports.addItem = async function(req, io) {
 }
 
 exports.removeItem = async function(req, io) {
+   recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$pull': {'users.$.item': req.itemId}, 'status': 0, "activeTime": new Date()},
+      {'$pull': {'users.$.item': req.itemId},
+         'status': 0, "activeTime": new Date()},
       (err, trade) => {
          if(err) console.log(500);
          var item = {
@@ -141,9 +157,8 @@ exports.removeItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         itemController.unmarkItem(req.itemId, req.room);
+         itemController.unmarkItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-removed', item);
-         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
@@ -201,7 +216,10 @@ checkTradeStatus = async function(req, io) {
 
       var c = trade.users.map(u => 
          u.item.map(i =>
-            {return {"userId": u.userId, "itemId": i}}
+            {
+               itemController.notifyItemUnavailable({itemId: i});
+               return {"userId": u.userId, "itemId": i}
+            }
          ))
 
       transactionWrapper.details = transactionWrapper.details.concat(c[0]);
@@ -242,7 +260,8 @@ exports.resetTrade = async function(req, io) {
       {$set: {"users.$[].item": []}, 'users.$[].status': 0, 'status': 0},
       (err, trade) => {
          if(err) console.log(500);
-         io.to(req.room).emit('trade-reseted', req.room);
+         io.to(req.room).emit('trade-reseted',
+            {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -3, msg: req.room})
          console.log(`${req.userId} has reset`);
       }

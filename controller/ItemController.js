@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Item = mongoose.model('Item');
+var tradeController = require('./TradeController');
 var Socket = require('../bin/www');
 var io = Socket.io;
 
@@ -7,13 +8,13 @@ exports.getSuggestedItems = async function(req, io) {
 
 }
 
-exports.markItem = async function(itemId, room) {
+exports.markItem = async function(itemId, room, userId) {
    await Item.findOneAndUpdate({'itemId': itemId},
       {'$addToSet': {rooms: room}},
       async (err, item) => {
          if(err) console.log(500, err);
          if(item === null) {
-            var item = new Item({itemId: itemId, rooms:[room]});
+            var item = new Item({itemId: itemId, userId: userId, rooms:[room]});
             await item.save((err) => {
                console.log('item saved');
                if(err) console.log(500);
@@ -32,9 +33,11 @@ exports.unmarkItem = async function(itemId, room) {
    )
 }
 
-exports.notifItemUnavailable = async function() {
-   await Item.find({'itemId': req.query.userId},
-      {'_id': 0, 'users._id': 0}, {activeTime: 'desc'}, function(err, trades) {
-         res.send(trades);
+exports.notifyItemUnavailable = async function(req, io) {
+   await Item.find({'itemId': req.itemId},
+      function(err, item) {
+         item.rooms.map(i => {
+            tradeController.removeItem({room: i, itemId: req.itemId, userId: userId}, io);
+         })
       })
 }
