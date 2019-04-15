@@ -37,8 +37,7 @@ exports.upsertTrade = async function(req, io) {
    await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
-   ]}, {"activeTime": new Date()} ,  roomName = async function(err, trade) {
-      var roomName;
+   ]}, {"activeTime": new Date()} , async function(err, trade) {
       if (err) console.log(500);
       if (trade === null) {
          roomName = await createTrade({room: req.room,
@@ -48,7 +47,6 @@ exports.upsertTrade = async function(req, io) {
          roomName = trade.room;
          console.log(`update room ${trade.room}`)
       }
-      return await Promise.resolve(roomName);
    })
    return await Promise.resolve(roomName);
 }

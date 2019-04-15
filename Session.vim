@@ -7,7 +7,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +47 controller/TradeController.js
+badd +239 controller/TradeController.js
 badd +16 socket/SocketServer.js
 badd +1 Constants.js
 badd +5 model/ItemModel.js
