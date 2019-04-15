@@ -111,7 +111,15 @@ exports.sendMessage = async function(req, io) {
    )
 }
 
+recheckRoom = async function(req, io) {
+   await Trade.fineOne({$and:[{'room': req.room}, {'status': 1}]},
+      function(err) {
+         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
+      })
+}
+
 exports.addItem = async function(req, io) {
+   recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0, "activeTime": new Date()},
       (err, trade) => {
@@ -124,7 +132,6 @@ exports.addItem = async function(req, io) {
          }
          itemController.markItem(req.itemId, req.room);
          io.to(req.room).emit('item-added', item);
-         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
@@ -132,6 +139,7 @@ exports.addItem = async function(req, io) {
 }
 
 exports.removeItem = async function(req, io) {
+   recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$pull': {'users.$.item': req.itemId}, 'status': 0, "activeTime": new Date()},
       (err, trade) => {
@@ -143,7 +151,6 @@ exports.removeItem = async function(req, io) {
          }
          itemController.unmarkItem(req.itemId, req.room);
          io.to(req.room).emit('item-removed', item);
-         io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
