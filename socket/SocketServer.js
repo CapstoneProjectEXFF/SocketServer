@@ -6,12 +6,10 @@ exports.ioOperate = function(io) {
 
       socket.on('get-room', async function(room) {
          console.log(`socket id ${socket.id}`);
-         await trading.upsertTrade(room, io)
-            .then((roomName) =>{
-               socket.join(roomName);
-               io.to(roomName).emit('room-ready', roomName);
-               console.log(`join room ${roomName}`);
-            })
+         var roomName = await trading.upsertTrade(room, io);
+         socket.join(roomName);
+         io.to(roomName).emit('room-ready', roomName);
+         console.log(`join room ${roomName}`);
       })
 
       socket.on('rejoin-room', function(room) {
@@ -49,6 +47,10 @@ exports.ioOperate = function(io) {
       socket.on('unconfirm-trade', function(data) {
          trading.unconfirmTrade(data, io);
       })
+
+      socket.on('qr-scan', function(data) {
+      })
+
    })
 }
 

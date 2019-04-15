@@ -39,15 +39,15 @@ exports.upsertTrade = async function(req, io) {
    ]}, {"activeTime": new Date()} ,  async function(err, trade) {
       if (err) console.log(500);
       if (trade === null) {
+         roomName = await createTrade({room: req.room,
+            userA: users[0], userB: users[1]}, io)
          console.log(`create new room ${roomName}`);
-         io.to(req.room).emit('create-trade', roomName);
-         return await createTrade({room: req.room, userA: users[0], userB: users[1]}, io);
       } else {
          roomName = trade.room;
          console.log(`update room ${roomName}`)
-         return await Promise.resolve(roomName);
       }
    })
+   return await Promise.resolve(roomName);
 }
 
 getUserFromAPI = async function(userId) {
@@ -180,7 +180,8 @@ checkTradeStatus = async function(req, io) {
       var transactionWrapper = {
          "transaction": {
             "receiverId": users[0],
-            "senderId": users[1]
+            "senderId": users[1],
+            "qrCode": crypto.createHash('sha256')
          },
          "details": []
       }
