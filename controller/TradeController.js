@@ -33,11 +33,12 @@ exports.getRoomMessage = async function(req, res) {
 
 exports.upsertTrade = async function(req, io) {
    var users = req.room.split('-');
-   var roomName = null;
+   var roomName; 
    await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
-   ]}, {"activeTime": new Date()} ,  async function(err, trade) {
+   ]}, {"activeTime": new Date()} ,  roomName = async function(err, trade) {
+      var roomName;
       if (err) console.log(500);
       if (trade === null) {
          roomName = await createTrade({room: req.room,
@@ -45,9 +46,9 @@ exports.upsertTrade = async function(req, io) {
          console.log(`create new room ${roomName}`);
       } else {
          roomName = trade.room;
-         console.log(`update room ${roomName}`)
-         return await Promise.resolve(roomName);
+         console.log(`update room ${trade.room}`)
       }
+      return await Promise.resolve(roomName);
    })
    return await Promise.resolve(roomName);
 }
@@ -235,7 +236,7 @@ checkTradeStatus = async function(req, io) {
 
 exports.resetTrade = async function(req, io) {
    await Trade.update({'room': req.room},
-      {$set: {"users.$[].item": []}, 'status': 0},
+      {$set: {"users.$[].item": []}, 'users.$[].status': 0, 'status': 0},
       (err, trade) => {
          if(err) console.log(500);
          io.to(req.room).emit('trade-reseted', req.room);

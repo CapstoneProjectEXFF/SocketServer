@@ -8,7 +8,7 @@ exports.createTransaction = async function(data, io) {
       qrCode: data.qrCode
    }
    var transaction = new Transaction(transInfo);
-   await transation.save((err) => {
+   await transaction.save((err) => {
       if(err) console.log(500);
    })
 }
