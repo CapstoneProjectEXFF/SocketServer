@@ -111,10 +111,18 @@ exports.sendMessage = async function(req, io) {
    )
 }
 
+recheckRoom = async function(room) {
+   await Trade.update({'room': room},
+      {'users.$[].status': 0},
+      function(err) {
+         if(err) console.log(500);
+      })
+}
+
 exports.addItem = async function(req, io) {
+   recheckRoom(req.room);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$addToSet': {'users.$.item': [req.itemId]},
-         'users.$[].status': 0,
          'status': 0, "activeTime": new Date()},
       (err, trade) => {
          //console.log(trade);
@@ -133,9 +141,9 @@ exports.addItem = async function(req, io) {
 }
 
 exports.removeItem = async function(req, io) {
+   recheckRoom(req.room);
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'$pull': {'users.$.item': req.itemId},
-         'users.$[].status': 0,
          'status': 0, "activeTime": new Date()},
       (err, trade) => {
          if(err) console.log(500);
