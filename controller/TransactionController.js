@@ -21,7 +21,7 @@ checkTransactionStatus = async function(data, io) {
    ]},
       (err, result) => {
          console.log(Object.keys(result));
-         if(result[0] === null) return;
+         if(result.length === 0) return;
          console.log(`trao doi thanh cong ${result[0].transactionId}`);
          io.to(data.socketId).emit('transaction-succeeded', result[0].transactionId);
       }
