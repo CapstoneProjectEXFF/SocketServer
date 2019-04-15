@@ -34,10 +34,10 @@ exports.scanQRCode = async function(data, io) {
       async (err, result) => {
          if(err) console.log(500, err);
          console.log(Object.keys(result));
-         await Transaction.find({'qrCode': data.qrCode}, function(err, result) {
+         await Transaction.find({'qrCode': data.qrCode}, function(err, res) {
             console.log(`${data.userId} scan thanh cong ${data.qrCode}`);
             io.to(data.socketId).emit('scan-succeeded',
-               {transactionId: result[0].transactionId, userId: data.userId});
+               {transactionId: res[0].transactionId, userId: data.userId});
             checkTransactionStatus(data, io);
          })
       }
