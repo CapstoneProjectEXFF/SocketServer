@@ -217,7 +217,10 @@ checkTradeStatus = async function(req, io) {
       var c = trade.users.map(u => 
          u.item.map(i =>
             {
-               itemController.notifyItemUnavailable({itemId: i});
+               itemController.notifyItemUnavailable({
+                  itemId: i,
+                  userId: u.userId
+               });
                return {"userId": u.userId, "itemId": i}
             }
          ))

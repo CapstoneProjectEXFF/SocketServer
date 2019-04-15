@@ -36,8 +36,11 @@ exports.unmarkItem = async function(itemId, room) {
 exports.notifyItemUnavailable = async function(req, io) {
    await Item.find({'itemId': req.itemId},
       function(err, item) {
+         console.log(`itemid ${req.itemId} itemFound ${item}`);
          item.rooms.map(i => {
-            tradeController.removeItem({room: i, itemId: req.itemId, userId: userId}, io);
+            tradeController.removeItem({
+               room: i, itemId: req.itemId,
+               userId: req.userId}, io);
          })
       })
 }
