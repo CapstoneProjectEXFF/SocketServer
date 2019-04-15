@@ -103,7 +103,7 @@ exports.sendMessage = async function(req, io) {
    }
    console.log(`${req.sender}: ${req.msg}`);
    await Trade.update({'room': req.room},
-      {'$addToSet': {messages: message}},
+      {'$addToSet': {messages: message}, "activeTime": new Date()},
       (err) => {
          if(err) console.log(500, err);
       }
@@ -112,7 +112,7 @@ exports.sendMessage = async function(req, io) {
 
 exports.addItem = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0},
+      {'$addToSet': {'users.$.item': [req.itemId]}, 'status': 0, "activeTime": new Date()},
       (err, trade) => {
          //console.log(trade);
          if(err) console.log(500);
@@ -132,7 +132,7 @@ exports.addItem = async function(req, io) {
 
 exports.removeItem = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'$pull': {'users.$.item': req.itemId}, 'status': 0},
+      {'$pull': {'users.$.item': req.itemId}, 'status': 0, "activeTime": new Date()},
       (err, trade) => {
          if(err) console.log(500);
          var item = {
@@ -151,7 +151,7 @@ exports.removeItem = async function(req, io) {
 
 exports.confirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'users.$.status': 1},
+      {'users.$.status': 1, "activeTime": new Date()},
       (err, trade) => {
          checkTradeStatus(req, io);
          if(err) console.log(500);
@@ -161,7 +161,7 @@ exports.confirmTrade = async function(req, io) {
 
 exports.unconfirmTrade = async function(req, io) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
-      {'users.$.status': 0},
+      {'users.$.status': 0, "activeTime": new Date()},
       (err, trade) => {
          io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          io.to(req.room).emit('send-msg', {sender: -2, msg: req.userId})
