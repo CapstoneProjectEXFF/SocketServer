@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
    transactionId: Number,
-   users: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Item'
-   }],
+   users: [String],
    qrCode: String,
-   status: Number,
+   status: {
+      type: Number,
+      default: function() {return 0;}
+   }
 }, {
    collection: 'Transaction',
    max: 1000

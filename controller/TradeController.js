@@ -5,6 +5,7 @@ var Socket = require('../bin/www');
 var io = Socket.io;
 var itemController = require('./ItemController');
 var tradeController = require('./TradeController');
+var transactionController = require('./TransactionController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
 var crypto = require('crypto');
@@ -47,7 +48,7 @@ exports.upsertTrade = async function(req, io) {
          console.log(`update room ${roomName}`)
       }
    })
-   return await Promise.resolve(roomName);
+      return await Promise.resolve(roomName);
 }
 
 getUserFromAPI = async function(userId) {
@@ -177,11 +178,16 @@ checkTradeStatus = async function(req, io) {
    ]}, (err, trade) => {
       if(trade === null) return;
       var users = req.room.split('-').sort();
+      var hash = crypto.createHash('sha256');
+      var code = users[0] + users[1] + new Date();
+      code = hash.update(code);
+      code = hash.digest(code);
+      var qrCode = code.toString('hex');
       var transactionWrapper = {
          "transaction": {
             "receiverId": users[0],
             "senderId": users[1],
-            "qrCode": crypto.createHash('sha256')
+            "qrCode": qrCode
          },
          "details": []
       }
@@ -210,8 +216,10 @@ checkTradeStatus = async function(req, io) {
             var bodyRes = JSON.parse(body);
             var transInfo = {
                transactionId:  bodyRes.message,
-               room: req.room
+               room: req.room,
+               qrCode: qrCode
             }
+            transactionController.saveTransaction(transInfo);
             io.to(req.room).emit("trade-done", transInfo);
             io.to(req.room).emit('send-msg', {sender: -4, msg: req.room})
             console.log('hello im spring: ' + bodyRes.message);
