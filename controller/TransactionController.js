@@ -27,11 +27,12 @@ checkTransactionStatus = async function(data, io) {
 }
 
 exports.scanQRCode = async function(data, io) {
-   await Transaction.update({'transactionId': data.transactionId},
+   await Transaction.update({'qrCode': data.qrCode},
       {'$pull': {users: data.user}},
       (err, result) => {
          if(err) console.log(500, err);
-         if (result.n == 1) {
+         console.log(Object.keys(result));
+         if (result.nModified === 1) {
             io.to(data.socketId).emit('scan-succeeded',
                {transactionId: data.transactionId, userId: data.user});
          }

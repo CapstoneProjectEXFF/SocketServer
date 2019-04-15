@@ -7,7 +7,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +160 controller/TradeController.js
+badd +224 controller/TradeController.js
 badd +24 socket/SocketServer.js
 badd +1 Constants.js
 badd +5 model/ItemModel.js
@@ -22,7 +22,7 @@ badd +42 controller/TransactionController.js
 badd +17 /usr/share/nvim/runtime/doc/help.txt
 argglobal
 silent! argdel *
-edit controller/TradeController.js
+edit controller/TransactionController.js
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
