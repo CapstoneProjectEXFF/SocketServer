@@ -137,7 +137,7 @@ exports.addItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         itemController.markItem(req.itemId, req.room);
+         itemController.markItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-added', item);
          io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId})
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
@@ -157,7 +157,7 @@ exports.removeItem = async function(req, io) {
             itemId: req.itemId,
             userId: req.userId
          }
-         itemController.unmarkItem(req.itemId, req.room);
+         itemController.unmarkItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-removed', item);
          io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId})
          console.log(`item ${req.itemId} removed from room ${req.room}`);
@@ -216,7 +216,10 @@ checkTradeStatus = async function(req, io) {
 
       var c = trade.users.map(u => 
          u.item.map(i =>
-            {return {"userId": u.userId, "itemId": i}}
+            {
+               itemController.notifyItemUnavailable({itemId: i});
+               return {"userId": u.userId, "itemId": i}
+            }
          ))
 
       transactionWrapper.details = transactionWrapper.details.concat(c[0]);
