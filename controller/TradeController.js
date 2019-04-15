@@ -34,7 +34,7 @@ exports.getRoomMessage = async function(req, res) {
 exports.upsertTrade = async function(req, io) {
    var users = req.room.split('-');
    var roomName; 
-   await Trade.findOneAndUpdate({$and: [
+   var existedRoom = await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
    ]}, {"activeTime": new Date()} , async function(err, trade) {
@@ -48,7 +48,11 @@ exports.upsertTrade = async function(req, io) {
          console.log(`update room ${trade.room}`)
       }
    })
-   return await Promise.resolve(roomName);
+   if (existedRoom === null) {
+      return await Promise.resolve(roomName);
+   } else {
+      return await Promise.resolve(existedRoom.room);
+   }
 }
 
 getUserFromAPI = async function(userId) {
