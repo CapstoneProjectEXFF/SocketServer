@@ -1,5 +1,6 @@
 var trading = require('../controller/TradeController');
 var transaction = require('../controller/TransactionController');
+var noti = require('../controller/NotificationController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
@@ -54,6 +55,10 @@ exports.ioOperate = function(io) {
          data.socketId = socket.id;
          transaction.scanQRCode(data, io);
       })
+
+      socket.on('noti-read', function(data)) {
+         noti.checkNotification(data);
+      }
 
    })
 }

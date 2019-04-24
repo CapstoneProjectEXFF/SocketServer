@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-   room: String,
-   notifications: [{
-      message: String,
-      userId: [String]
-   }],
+   userId: String,
+   activeNotifications: [String],
+   archiveNotifications: [String]
 }, {
    collection: 'Notification',
    max: 1000

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Trade = mongoose.model('Trade');
 var Item = mongoose.model('Item');
+var Notification = mongoose.model('Notification');
 var Socket = require('../bin/www');
 var io = Socket.io;
 var itemController = require('./ItemController');
@@ -108,7 +109,7 @@ exports.sendMessage = async function(req, io) {
       (err) => {
          if(err) console.log(500, err);
          io.to(req.room).emit('send-msg',
-            {sender: req.sender, msg: req.itemId, room: req.room}
+            {sender: req.sender, msg: req.msg, room: req.room}
          )
       }
    )
@@ -145,7 +146,7 @@ exports.addItem = async function(req, io) {
          //io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId, room: req.room})
          req.sender = -5;
          req.msg = req.itemId;
-         sendMessage(req, io);
+         tradeController.sendMessage(req, io);
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
@@ -168,7 +169,7 @@ exports.removeItem = async function(req, io) {
          //io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId, room: req.room})
          req.sender = -6;
          req.msg = req.itemId;
-         sendMessage(req, io);
+         tradeController.sendMessage(req, io);
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
@@ -192,7 +193,7 @@ exports.unconfirmTrade = async function(req, io) {
          //io.to(req.room).emit('send-msg', {sender: -2, msg: req.userId, room: req.room})
          req.sender = -2;
          req.msg = req.userId;
-         sendMessage(req, io);
+         tradeController.sendMessage(req, io);
          if(err) console.log(500, err);
       }
    )
@@ -208,7 +209,7 @@ checkTradeStatus = async function(req, io) {
    //io.to(req.room).emit('send-msg', {sender: -1, msg: req.userId, room: req.room})
    req.sender = -1;
    req.msg = req.userId;
-   sendMessage(req, io);
+   tradeController.sendMessage(req, io);
    await Trade.findOne({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
@@ -269,7 +270,7 @@ checkTradeStatus = async function(req, io) {
             //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
             req.sender = -4;
             req.msg = req.room;
-            sendMessage(req, io);
+            tradeController.sendMessage(req, io);
             console.log('hello im spring: ' + bodyRes.message);
             tradeController.resetTrade(req, io);
          });
@@ -288,7 +289,7 @@ exports.resetTrade = async function(req, io) {
          //io.to(req.room).emit('send-msg', {sender: -3, msg: req.room, room: req.room})
          req.sender = -3;
          req.msg = req.room;
-         sendMessage(req, io);
+         tradeController.sendMessage(req, io);
          console.log(`${req.userId} has reset`);
       }
    )
