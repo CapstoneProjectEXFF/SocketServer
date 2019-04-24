@@ -56,10 +56,9 @@ exports.ioOperate = function(io) {
          transaction.scanQRCode(data, io);
       })
 
-      socket.on('noti-read', function(data)) {
+      socket.on('noti-read', function(data) {
          noti.checkNotification(data);
-      }
-
+      })
    })
 }
 

@@ -9,3 +9,5 @@ const notificationSchema = new mongoose.Schema({
    max: 1000
 })
 
+module.exports = mongoose.model('Notification', notificationSchema);
+
