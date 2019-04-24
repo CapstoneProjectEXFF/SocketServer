@@ -4,7 +4,9 @@ var Socket = require('../bin/www');
 var io = Socket.io;
 
 exports.saveNotification = async function(req, io) {
-   await Notification.findOneAndUpdate({'userId': req.userId},
+   await Notification.findOneAndUpdate(
+      {'userId': req.userId},
+      {'$addToSet': {activeNotifications: req.msg}},
       async (noti, err) => {
          if(err) console.log(500, err);
          if(!noti) {

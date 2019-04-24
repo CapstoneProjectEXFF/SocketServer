@@ -21,7 +21,7 @@ exports.ioOperate = function(io) {
       })
 
       socket.on('send-msg', function(data) {
-         trading.sendMessage(data);
+         trading.sendMessage(data, io);
          console.log(Object.keys(socket.rooms));
          io.to(data.room).emit('send-msg', data);
          //io.to(socket.id).emit('send-msg', data);
