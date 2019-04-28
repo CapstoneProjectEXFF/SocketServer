@@ -138,7 +138,7 @@ exports.saveNoti = async function(req, io) {
 
 exports.checkNoti = async function(req, io) {
    console.log('noti read');
-   await Trade.update({'notifications._id': mongoose.Types.ObjectId(req.notiId)},
+   await Trade.update({'notifications._id': mongoose.Types.ObjectId(req)},
       {'$set': {'notifications.$.status': 1}},
       (err) => {
          if(err) console.log(500, err);
@@ -193,7 +193,7 @@ recheckRoom = async function(req, io) {
 
 exports.addItem = async function(req, io) {
    recheckRoom(req, io);
-   await Trade.update({'room': req.room, 'users.userId': req.userId},
+   await Trade.update({'room': req.room, 'users.userId': req.ownerId},
       {'$addToSet': {'users.$.item': [req.itemId]},
          'status': 0, "activeTime": new Date()},
       (err, trade) => {
@@ -202,7 +202,8 @@ exports.addItem = async function(req, io) {
          var item = {
             room: req.room,
             itemId: req.itemId,
-            userId: req.userId
+            userId: req.userId,
+            ownerId: req.ownerId
          }
          itemController.markItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-added', item);
@@ -218,7 +219,7 @@ exports.addItem = async function(req, io) {
 
 exports.removeItem = async function(req, io) {
    recheckRoom(req, io);
-   await Trade.update({'room': req.room, 'users.userId': req.userId},
+   await Trade.update({'room': req.room, 'users.userId': req.ownerId},
       {'$pull': {'users.$.item': req.itemId},
          'status': 0, "activeTime": new Date()},
       (err, trade) => {
@@ -226,7 +227,8 @@ exports.removeItem = async function(req, io) {
          var item = {
             room: req.room,
             itemId: req.itemId,
-            userId: req.userId
+            userId: req.userId,
+            ownerId: req.ownerId
          }
          itemController.unmarkItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-removed', item);

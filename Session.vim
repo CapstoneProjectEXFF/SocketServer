@@ -8,7 +8,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 set shortmess=aoO
 badd +140 controller/TradeController.js
-badd +64 socket/SocketServer.js
+badd +60 socket/SocketServer.js
 badd +1 Constants.js
 badd +5 model/ItemModel.js
 badd +21 model/TradeModel.js
@@ -24,7 +24,7 @@ badd +5 model/NotificationModel.js
 badd +17 controller/NotificationController.js
 argglobal
 silent! argdel *
-edit socket/SocketServer.js
+edit controller/TradeController.js
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -40,6 +40,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
+336,342fold
 let s:l = 1 - ((0 * winheight(0) + 20) / 41)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
