@@ -57,7 +57,8 @@ exports.ioOperate = function(io) {
       })
 
       socket.on('noti-read', function(data) {
-         noti.checkNotification(data);
+         console.log('toi k nhan duoc');
+         trading.checkNoti(data);
       })
    })
 }

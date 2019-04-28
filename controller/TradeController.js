@@ -86,7 +86,7 @@ createTrade = async function(roomInfo, io) {
       //users: [{userId: roomInfo.userA},
       //   {userId: roomInfo.userB}],
       users: [userA, userB],
-      message: [], room: roomInfo.room,
+      message: [], notifications: [], room: roomInfo.room,
       activeTime: new Date(),
       status: 0
    };
@@ -113,6 +113,69 @@ exports.sendMessage = async function(req, io) {
          )
       }
    )
+}
+
+exports.saveNoti = async function(req, io) {
+   var users = req.room.split('-').sort();
+   var receiver = users.filter(i => i !== '' + req.userId);
+   console.log(req.userId, receiver);
+   var noti = {
+      receiverId: receiver[0],
+      msg: req.msg,
+      notiType: req.notiType,
+      status: 0
+   }
+   await Trade.update({'room': req.room},
+      {'$addToSet': {notifications: noti}, "activeTime": new Date()},
+      (err) => {
+         if(err) console.log(500, err);
+         io.to(req.room).emit('trade-change',
+            {receiverId: noti.receiverId, msg: req.msg, room: req.room}
+         )
+      }
+   )
+}
+
+exports.checkNoti = async function(req, io) {
+   console.log('noti read');
+   await Trade.update({'notifications._id': mongoose.Types.ObjectId(req.notiId)},
+      {'$set': {'notifications.$.status': 1}},
+      (err) => {
+         if(err) console.log(500, err);
+         //io.to(req.room).emit('trade-change',
+         //   {receiver: req.receiver, msg: req.msg, room: req.room}
+         //)
+      }
+   )
+}
+
+exports.getUserNotification = async function(req, res) {
+   await Trade.aggregate([
+      {
+         $project: {
+            notifications: {
+               $filter: {
+                  input: "$notifications",
+                  as: "notifications",
+                  cond: {$and: [
+                     {$eq: ["$$notifications.receiverId", req.query.userId]},
+                     {$eq: ["$$notifications.status", 0]}
+                  ]}
+               }
+            },
+            user: {
+             $filter: {
+               input: "$users",
+               as: "users",
+               cond: {$ne: ["$$users.userId", req.query.userId]}
+             }
+         }
+         }
+      }
+   ], function(err, noti) {
+      var result = noti.filter(i => i.notifications.length > 0);
+      res.send(result);
+   })
 }
 
 recheckRoom = async function(req, io) {
@@ -144,9 +207,10 @@ exports.addItem = async function(req, io) {
          itemController.markItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-added', item);
          //io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId, room: req.room})
-         req.sender = -5;
+         req.notiType = -5;
          req.msg = req.itemId;
-         tradeController.sendMessage(req, io);
+         //tradeController.sendMessage(req, io);
+         tradeController.saveNoti(req, io)
          console.log(`${req.userId} added item ${req.itemId} to room ${req.room}`);
       }
    )
@@ -167,9 +231,10 @@ exports.removeItem = async function(req, io) {
          itemController.unmarkItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-removed', item);
          //io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId, room: req.room})
-         req.sender = -6;
+         req.notiType = -6;
          req.msg = req.itemId;
-         tradeController.sendMessage(req, io);
+         //tradeController.sendMessage(req, io);
+         tradeController.saveNoti(req, io)
          console.log(`item ${req.itemId} removed from room ${req.room}`);
       }
    )
@@ -191,9 +256,10 @@ exports.unconfirmTrade = async function(req, io) {
       (err, trade) => {
          io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
          //io.to(req.room).emit('send-msg', {sender: -2, msg: req.userId, room: req.room})
-         req.sender = -2;
+         req.notiType = -2;
          req.msg = req.userId;
-         tradeController.sendMessage(req, io);
+         //tradeController.sendMessage(req, io);
+         tradeController.saveNoti(req, io)
          if(err) console.log(500, err);
       }
    )
@@ -207,9 +273,10 @@ checkTradeStatus = async function(req, io) {
    }
    io.to(req.room).emit('user-accepted-trade', result);
    //io.to(req.room).emit('send-msg', {sender: -1, msg: req.userId, room: req.room})
-   req.sender = -1;
+   req.notiType = -1;
    req.msg = req.userId;
-   tradeController.sendMessage(req, io);
+   //tradeController.sendMessage(req, io);
+   tradeController.saveNoti(req, io)
    await Trade.findOne({$and: [
       {'room': req.room},
       {"users": {$not: {$elemMatch: {status: 0}}}}
@@ -230,6 +297,12 @@ checkTradeStatus = async function(req, io) {
          "details": []
       }
 
+      var transInfo = {
+         transactionId:  bodyRes.message,
+         room: req.room,
+         qrCode: qrCode
+      }
+
       var c = trade.users.map(u => 
          u.item.map(i =>
             {
@@ -241,9 +314,12 @@ checkTradeStatus = async function(req, io) {
                return {"userId": u.userId, "itemId": i}
             }
          ))
-
-      transactionWrapper.details = transactionWrapper.details.concat(c[0]);
-      transactionWrapper.details = transactionWrapper.details.concat(c[1]);
+      c.forEach((items, index) => {
+         if (i.length > 0) {
+            transactionWrapper.details = transactionWrapper.details.concat(items);
+            transInfo.users = transInfo.users.concat(user[index]);
+         }
+      })
 
       console.log(transactionWrapper.details);
       fetch.Promise = Bluebird;
@@ -259,18 +335,20 @@ checkTradeStatus = async function(req, io) {
          .then(res => res.text())
          .then(body => {
             var bodyRes = JSON.parse(body);
-            var transInfo = {
-               transactionId:  bodyRes.message,
-               room: req.room,
-               users:[users[0], users[1]],
-               qrCode: qrCode
-            }
+            transInfo.transactionId = bodyRes.message;
+            //var transInfo = {
+            //   transactionId:  bodyRes.message,
+            //   room: req.room,
+            //   users:[users[0], users[1]],
+            //   qrCode: qrCode
+            //}
             transactionController.createTransaction(transInfo);
             io.to(req.room).emit("trade-done", transInfo);
             //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
-            req.sender = -4;
+            req.notiType = -4;
             req.msg = req.room;
-            tradeController.sendMessage(req, io);
+            //tradeController.sendMessage(req, io);
+            tradeController.saveNoti(req, io);
             console.log('hello im spring: ' + bodyRes.message);
             tradeController.resetTrade(req, io);
          });
@@ -287,9 +365,10 @@ exports.resetTrade = async function(req, io) {
          io.to(req.room).emit('trade-reseted',
             {room: req.room, userId: req.userId});
          //io.to(req.room).emit('send-msg', {sender: -3, msg: req.room, room: req.room})
-         req.sender = -3;
+         req.notiType = -3;
          req.msg = req.room;
-         tradeController.sendMessage(req, io);
+         //tradeController.sendMessage(req, io);
+         tradeController.saveNoti(req, io);
          console.log(`${req.userId} has reset`);
       }
    )

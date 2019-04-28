@@ -33,4 +33,7 @@ Conversation {
    userId: String
 }
 -----------------------------------------
+1. save message
+2. notif
+3. 1 qr
 
