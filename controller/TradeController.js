@@ -122,9 +122,14 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
-   var users = req.room.split('-').sort();
+var users = req.room.split('-').sort();
    var receiver = users.filter(i => i !== '' + req.userId);
    console.log(req.userId, receiver);
+
+   var res = await fetch(`http://35.247.191.68:8080/user/${receiver[0]}`);
+   var receiverInfo = await res.json();
+   var res2 = await fetch(`http://35.247.191.68:8080/user/${req.userId}`);
+   var senderInfo = await res2.json();
    var noti = {
       receiverId: receiver[0],
       msg: req.msg,
@@ -136,7 +141,8 @@ exports.saveNoti = async function(req, io) {
       (err) => {
          if(err) console.log(500, err);
          io.to(socketId).emit('trade-change', {
-            receiverId: noti.receiverId,
+            sender: senderInfo,
+            receiver: receiverInfo,
             msg: req.msg,
             notiType: req.notiType,
             room: req.room
