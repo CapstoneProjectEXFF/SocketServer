@@ -7,8 +7,8 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +140 controller/TradeController.js
-badd +60 socket/SocketServer.js
+badd +17 controller/TradeController.js
+badd +7 socket/SocketServer.js
 badd +1 Constants.js
 badd +5 model/ItemModel.js
 badd +21 model/TradeModel.js
@@ -40,7 +40,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-336,342fold
+347,353fold
 let s:l = 1 - ((0 * winheight(0) + 20) / 41)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l

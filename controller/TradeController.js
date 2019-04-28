@@ -10,6 +10,12 @@ var transactionController = require('./TransactionController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
 var crypto = require('crypto');
+var socketId;
+
+exports.initSocket = function(id) {
+   socketId = id;
+   console.log(socketId);
+}
 
 exports.getUserTrading = async function(req, res) {
    await Trade.find({'users.userId': req.query.userId},
@@ -129,9 +135,12 @@ exports.saveNoti = async function(req, io) {
       {'$addToSet': {notifications: noti}, "activeTime": new Date()},
       (err) => {
          if(err) console.log(500, err);
-         io.to(req.room).emit('trade-change',
-            {receiverId: noti.receiverId, msg: req.msg, room: req.room}
-         )
+         io.to(socketId).emit('trade-change', {
+            receiverId: noti.receiverId,
+            msg: req.msg,
+            notiType: req.notiType,
+            room: req.room
+         })
       }
    )
 }
@@ -164,12 +173,12 @@ exports.getUserNotification = async function(req, res) {
                }
             },
             user: {
-             $filter: {
-               input: "$users",
-               as: "users",
-               cond: {$ne: ["$$users.userId", req.query.userId]}
-             }
-         }
+               $filter: {
+                  input: "$users",
+                  as: "users",
+                  cond: {$ne: ["$$users.userId", req.query.userId]}
+               }
+            }
          }
       }
    ], function(err, noti) {
