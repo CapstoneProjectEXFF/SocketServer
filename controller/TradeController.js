@@ -309,7 +309,6 @@ checkTradeStatus = async function(req, io) {
       }
 
       var transInfo = {
-         transactionId:  bodyRes.message,
          room: req.room,
          qrCode: qrCode
       }
