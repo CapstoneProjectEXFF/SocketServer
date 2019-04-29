@@ -123,6 +123,9 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
+   io.in(req.room).clients((err, clients) => {
+      if(clients.length === 2) return;
+   })
    var users = req.room.split('-').sort();
    var receiver = users.filter(i => i !== '' + req.userId);
 
