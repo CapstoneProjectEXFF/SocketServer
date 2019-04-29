@@ -337,7 +337,8 @@ checkTradeStatus = async function(req, io) {
 
       var transInfo = {
          room: req.room,
-         qrCode: qrCode
+         qrCode: qrCode,
+         users: []
       }
 
       var c = trade.users.map(u => 
