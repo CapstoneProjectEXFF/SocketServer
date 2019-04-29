@@ -123,32 +123,31 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
-   var cont = true;
-   io.in(req.room).clients((err, clients) => {
+   io.in(req.room).clients(async (err, clients) => {
       console.log(`phong nay co ${clients.length}`);
-      if(clients.length === 2) cont = false;
-   })
-   if(!cont) return;
-   var users = req.room.split('-').sort();
-   var receiver = users.filter(i => i !== '' + req.userId);
+      if(clients.length < 2) {
+         var users = req.room.split('-').sort();
+         var receiver = users.filter(i => i !== '' + req.userId);
 
-   var res = await fetch(`http://35.247.191.68:8080/user/${receiver[0]}`);
-   var receiverInfo = await res.json();
-   var res2 = await fetch(`http://35.247.191.68:8080/user/${req.userId}`);
-   var senderInfo = await res2.json();
-   var noti = {
-      receiverId: receiver[0],
-      msg: req.msg,
-      notiType: req.notiType,
-      status: 0,
-      activeTime: new Date()
-   }
-   await Trade.update({'room': req.room},
-      {'$addToSet': {notifications: noti}},
-      async (err) => {
-         if(err) console.log(500, err);
-         userController.notiUserById(receiver[0], io);
-      })
+         var res = await fetch(`http://35.247.191.68:8080/user/${receiver[0]}`);
+         var receiverInfo = await res.json();
+         var res2 = await fetch(`http://35.247.191.68:8080/user/${req.userId}`);
+         var senderInfo = await res2.json();
+         var noti = {
+            receiverId: receiver[0],
+            msg: req.msg,
+            notiType: req.notiType,
+            status: 0,
+            activeTime: new Date()
+         }
+         await Trade.update({'room': req.room},
+            {'$addToSet': {notifications: noti}},
+            async (err) => {
+               if(err) console.log(500, err);
+               userController.notiUserById(receiver[0], io);
+            })
+      }
+   })
 }
 
 exports.checkNoti = async function(req, io) {
