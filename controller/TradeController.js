@@ -164,36 +164,48 @@ exports.checkNoti = async function(req, io) {
    )
 }
 
+//exports.getUserNotification = async function(req, res) {
+//   await Trade.aggregate([
+//      {
+//         $project: {
+//            notifications: {
+//               $filter: {
+//                  input: "$notifications",
+//                  as: "notifications",
+//                  cond: {$and: [
+//                     {$eq: ["$$notifications.receiverId", req.query.userId]},
+//                     {$eq: ["$$notifications.status", 0]}
+//                  ]}
+//               }
+//            },
+//            user: {
+//               $filter: {
+//                  input: "$users",
+//                  as: "users",
+//                  cond: {$ne: ["$$users.userId", req.query.userId]}
+//               }
+//            }
+//         }
+//      }
+//   ], function(err, noti) {
+//      var result = noti.filter(i => i.notifications.length > 0);
+//      res.send(result);
+//   })
+//}
+
 exports.getUserNotification = async function(req, res) {
-   await Trade.aggregate([
-      {
-         $project: {
-            notifications: {
-               $filter: {
-                  input: "$notifications",
-                  as: "notifications",
-                  cond: {$and: [
-                     {$eq: ["$$notifications.receiverId", req.query.userId]},
-                     {$eq: ["$$notifications.status", 0]}
-                  ]}
-               }
-            },
-            user: {
-               $filter: {
-                  input: "$users",
-                  as: "users",
-                  cond: {$ne: ["$$users.userId", req.query.userId]}
-               }
+   var result = [];
+   await Trade.find({'users.userId': req.query.userId},
+      {'_id': 0, 'users._id': 0},{activeTime: 'desc'}, function(err, trades) {
+         trades.map(info => {
+            var userInfo = info.users.filter(u => u.userId !== req.query.userId)
+            var notif = info.notifications[info.notifications.length -1 ];
+            if(notif.status === 0 && notif.receiverId === req.query.userId) {
+               result.push({user: userInfo, notification: notif});
             }
-         }
-      }
-   ], function(err, noti) {
-      var result = noti.filter(i => i.notifications.length > 0);
-      res.send({
-         notification: result[0].notifications[result[0].notifications.length -1],
-         user: result[0].user
-      });
-   })
+         })
+      })
+   res.send(result);
 }
 
 recheckRoom = async function(req, io) {
