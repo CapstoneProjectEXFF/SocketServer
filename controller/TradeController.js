@@ -141,7 +141,7 @@ exports.saveNoti = async function(req, io) {
       (err) => {
          if(err) console.log(500, err);
          userController.findUserById(receiver[0]).then(i => 
-            io.to(i.socketId).emit('trade-change', { msg: 'new noti', }))
+            if(i) io.to(i.socketId).emit('trade-change', { msg: 'new noti', }))
       })
 }
 
