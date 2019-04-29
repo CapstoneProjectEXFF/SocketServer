@@ -126,6 +126,7 @@ exports.saveNoti = async function(req, io) {
    io.in(req.room).clients((err, clients) => {
       console.log(`phong nay co ${clients.length}`);
       if(clients.length === 2) return;
+      console.log('quit r ma ta');
    })
    var users = req.room.split('-').sort();
    var receiver = users.filter(i => i !== '' + req.userId);
@@ -187,7 +188,10 @@ exports.getUserNotification = async function(req, res) {
       }
    ], function(err, noti) {
       var result = noti.filter(i => i.notifications.length > 0);
-      res.send(result[0].notifications[result[0].notifications.length -1]);
+      res.send({
+         notification: result[0].notifications[result[0].notifications.length -1],
+         user: result[0].user
+      });
    })
 }
 
