@@ -355,7 +355,7 @@ checkTradeStatus = async function(req, io) {
       c.forEach((items, index) => {
          if (items.length > 0) {
             transactionWrapper.details = transactionWrapper.details.concat(items);
-            transInfo.users = transInfo.users.concat(user[index]);
+            transInfo.users = transInfo.users.concat(users[index]);
          }
       })
 
