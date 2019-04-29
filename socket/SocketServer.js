@@ -5,6 +5,7 @@ var noti = require('../controller/NotificationController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
+      console.log(socket.id);
       socket.on('get-room', function(room) {
          console.log(`socket id ${socket.id}`);
          trading.upsertTrade(room, io, socket);

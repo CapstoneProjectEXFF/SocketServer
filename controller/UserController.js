@@ -22,11 +22,10 @@ exports.assignUser = async function(req, io) {
    )
 }
 
-exports.findUserById = async function(userId, io) {
-   var result;
+exports.notiUserById = async function(userId, io) {
    await User.findOne({'userId': userId},
       {'_id': 0, 'users._id': 0}, function(err, user) {
-         result = user;
+         console.log(user.socketId);
+         io.to(user.socketId).emit('trade-change', { msg: 'new noti'}) 
       })
-   return Promise.resolve(result);
 }

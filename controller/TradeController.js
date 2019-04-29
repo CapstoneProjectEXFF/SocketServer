@@ -138,11 +138,9 @@ exports.saveNoti = async function(req, io) {
    }
    await Trade.update({'room': req.room},
       {'$addToSet': {notifications: noti}, "activeTime": new Date()},
-      (err) => {
+      async (err) => {
          if(err) console.log(500, err);
-         userController.findUserById(receiver[0]).then(i => {
-            if(i) io.to(i.socketId).emit('trade-change', { msg: 'new noti', }) 
-         })
+         userController.notiUserById(receiver[0], io);
       })
 }
 
@@ -359,6 +357,7 @@ checkTradeStatus = async function(req, io) {
             //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
             req.notiType = -4;
             req.msg = req.room;
+            req.transactionId = transInfo.transactionId;
             //tradeController.sendMessage(req, io);
             tradeController.saveNoti(req, io);
             console.log('hello im spring: ' + bodyRes.message);
