@@ -140,8 +140,9 @@ exports.saveNoti = async function(req, io) {
       {'$addToSet': {notifications: noti}, "activeTime": new Date()},
       (err) => {
          if(err) console.log(500, err);
-         userController.findUserById(receiver[0]).then(i => 
-            if(i) io.to(i.socketId).emit('trade-change', { msg: 'new noti', }))
+         userController.findUserById(receiver[0]).then(i => {
+            if(i) io.to(i.socketId).emit('trade-change', { msg: 'new noti', }) 
+         })
       })
 }
 
