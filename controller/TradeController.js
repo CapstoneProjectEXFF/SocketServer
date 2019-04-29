@@ -123,12 +123,12 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
-   var continue = true;
+   var cont = true;
    io.in(req.room).clients((err, clients) => {
       console.log(`phong nay co ${clients.length}`);
-      if(clients.length === 2) continue = false;
+      if(clients.length === 2) cont = false;
    })
-   if(!continue) return;
+   if(!cont) return;
    var users = req.room.split('-').sort();
    var receiver = users.filter(i => i !== '' + req.userId);
 
