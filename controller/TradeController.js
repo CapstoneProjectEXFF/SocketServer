@@ -245,7 +245,7 @@ exports.removeItem = async function(req, io) {
          req.msg = req.itemId;
          //tradeController.sendMessage(req, io);
          tradeController.saveNoti(req, io)
-         console.log(`item ${req.itemId} removed from room ${req.room}`);
+         console.log(`${req.userId} remove item ${req.itemId} from room ${req.room}`);
       }
    )
 }

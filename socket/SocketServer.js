@@ -5,13 +5,13 @@ var noti = require('../controller/NotificationController');
 
 exports.ioOperate = function(io) {
    io.on('connection', socket => {
-      console.log(socket.id);
       socket.on('get-room', function(room) {
          console.log(`socket id ${socket.id}`);
          trading.upsertTrade(room, io, socket);
       })
 
       socket.on('assign-user', function(userId){
+         console.log(`user moi vo hehe ${userId}: ${socket.id}`);
          user.assignUser({userId: userId, socketId: socket.id})
       })
 

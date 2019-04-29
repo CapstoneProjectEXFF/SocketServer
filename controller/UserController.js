@@ -25,7 +25,7 @@ exports.assignUser = async function(req, io) {
 exports.notiUserById = async function(userId, io) {
    await User.findOne({'userId': userId},
       {'_id': 0, 'users._id': 0}, function(err, user) {
-         console.log(user.socketId);
-         io.to(user.socketId).emit('trade-change', { msg: 'new noti'}) 
+          console.log(`noti to ${userId}: ${user.socketId}`);
+         io.to(user.socketId).emit('trade-change', 'new noti') 
       })
 }
