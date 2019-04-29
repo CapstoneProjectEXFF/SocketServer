@@ -21,7 +21,8 @@ const tradeSchema = new mongoose.Schema({
       receiverId: String,
       msg: String,
       notiType: Number,
-      status: Number
+      status: Number,
+      active: Date
    }],
    room: String,
    activeTime: Date,

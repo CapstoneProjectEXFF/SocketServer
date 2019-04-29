@@ -134,10 +134,11 @@ exports.saveNoti = async function(req, io) {
       receiverId: receiver[0],
       msg: req.msg,
       notiType: req.notiType,
-      status: 0
+      status: 0,
+      activeTime: new Date()
    }
    await Trade.update({'room': req.room},
-      {'$addToSet': {notifications: noti}, "activeTime": new Date()},
+      {'$addToSet': {notifications: noti}},
       async (err) => {
          if(err) console.log(500, err);
          userController.notiUserById(receiver[0], io);
