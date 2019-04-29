@@ -22,7 +22,7 @@ const tradeSchema = new mongoose.Schema({
       msg: String,
       notiType: Number,
       status: Number,
-      active: Date
+      activeTime: Date
    }],
    room: String,
    activeTime: Date,
