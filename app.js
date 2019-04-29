@@ -24,6 +24,7 @@ var
    Trade = require('./model/TradeModel');
    Transaction = require('./model/TransactionModel');
    Notification = require('./model/NotificationModel');
+   User = require('./model/UserModel');
 
 mongoose.connect(dbUrl, (err) => {
 	console.log('mlab connected',err);

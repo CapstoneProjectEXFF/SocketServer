@@ -6,6 +6,7 @@ var Socket = require('../bin/www');
 var io = Socket.io;
 var itemController = require('./ItemController');
 var tradeController = require('./TradeController');
+var userController = require('./UserController');
 var transactionController = require('./TransactionController');
 var fetch = require('node-fetch');
 var Bluebird = require('bluebird');
@@ -122,9 +123,8 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
-var users = req.room.split('-').sort();
+   var users = req.room.split('-').sort();
    var receiver = users.filter(i => i !== '' + req.userId);
-   console.log(req.userId, receiver);
 
    var res = await fetch(`http://35.247.191.68:8080/user/${receiver[0]}`);
    var receiverInfo = await res.json();
@@ -140,15 +140,9 @@ var users = req.room.split('-').sort();
       {'$addToSet': {notifications: noti}, "activeTime": new Date()},
       (err) => {
          if(err) console.log(500, err);
-         io.to(socketId).emit('trade-change', {
-            sender: senderInfo,
-            receiver: receiverInfo,
-            msg: req.msg,
-            notiType: req.notiType,
-            room: req.room
-         })
-      }
-   )
+         userController.findUserById(receiver[0]).then(i => 
+            io.to(i.socketId).emit('trade-change', { msg: 'new noti', }))
+      })
 }
 
 exports.checkNoti = async function(req, io) {
