@@ -124,6 +124,7 @@ exports.sendMessage = async function(req, io) {
 
 exports.saveNoti = async function(req, io) {
    io.in(req.room).clients((err, clients) => {
+      console.log(`phong nay co ${clients.length}`);
       if(clients.length === 2) return;
    })
    var users = req.room.split('-').sort();
@@ -186,7 +187,7 @@ exports.getUserNotification = async function(req, res) {
       }
    ], function(err, noti) {
       var result = noti.filter(i => i.notifications.length > 0);
-      res.send(result);
+      res.send(result[0].notifications[result[0].notifications.length -1]);
    })
 }
 
