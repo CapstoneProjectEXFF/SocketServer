@@ -192,19 +192,26 @@ exports.checkNoti = async function(req, io) {
 //   })
 //}
 
-exports.getUserNotification = async function(req, res) {
-   var result = [];
-   await Trade.find({'users.userId': req.query.userId},
+exports.getNotification = async function(req) {
+   return await Trade.find({'users.userId': req.query.userId},
       {'_id': 0, 'users._id': 0},{activeTime: 'desc'}, function(err, trades) {
-         trades.map(info => {
+      })
+   //return Promise.resolve(trade);
+}
+exports.getUserNotification = async function(req, res) {
+   tradeController.getNotification(req)
+      .then(trades => {
+         var result = [];
+         trades.forEach(info => {
             var userInfo = info.users.filter(u => u.userId !== req.query.userId)
             var notif = info.notifications[info.notifications.length -1 ];
             if(notif.status === 0 && notif.receiverId === req.query.userId) {
                result.push({user: userInfo, notification: notif});
             }
          })
+         return result;
       })
-   res.send(result);
+      .then(result => res.send(result))
 }
 
 recheckRoom = async function(req, io) {

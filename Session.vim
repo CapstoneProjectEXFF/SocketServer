@@ -7,7 +7,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +128 controller/TradeController.js
+badd +146 controller/TradeController.js
 badd +25 socket/SocketServer.js
 badd +1 Constants.js
 badd +1 model/ItemModel.js
@@ -23,7 +23,7 @@ badd +17 /usr/share/nvim/runtime/doc/help.txt
 badd +5 model/NotificationModel.js
 badd +17 controller/NotificationController.js
 badd +6 model/UserModel.js
-badd +28 controller/UserController.js
+badd +27 controller/UserController.js
 argglobal
 silent! argdel *
 edit controller/TradeController.js
@@ -42,6 +42,13 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
+166,183fold
+166,195fold
+166,195fold
+166
+normal! zo
+166
+normal! zo
 let s:l = 1 - ((0 * winheight(0) + 21) / 42)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
