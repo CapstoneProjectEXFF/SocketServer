@@ -129,12 +129,8 @@ exports.saveNoti = async function(req, io) {
          var users = req.room.split('-').sort();
          var receiver = users.filter(i => i !== '' + req.userId);
 
-         var res = await fetch(`http://35.247.191.68:8080/user/${receiver[0]}`);
-         var receiverInfo = await res.json();
-         var res2 = await fetch(`http://35.247.191.68:8080/user/${req.userId}`);
-         var senderInfo = await res2.json();
          var noti = {
-            receiverId: receiver[0],
+            receiverId: receiver,
             msg: req.msg,
             notiType: req.notiType,
             status: 0,
@@ -144,7 +140,7 @@ exports.saveNoti = async function(req, io) {
             {'$addToSet': {notifications: noti}},
             async (err) => {
                if(err) console.log(500, err);
-               userController.notiUserById(receiver[0], io);
+               userController.notiUserById(receiver, io);
             })
       }
    })
@@ -387,9 +383,10 @@ checkTradeStatus = async function(req, io) {
             req.msg = req.room;
             req.transactionId = transInfo.transactionId;
             //tradeController.sendMessage(req, io);
-            tradeController.saveNoti(req, io);
-            console.log('hello im spring: ' + bodyRes.message);
             tradeController.resetTrade(req, io);
+            console.log('hello im spring: ' + bodyRes.message);
+            req.userId = ''
+            tradeController.saveNoti(req, io);
          });
       if(err) console.log(500, err);
    }
