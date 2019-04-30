@@ -197,17 +197,26 @@ exports.getNotification = async function(req) {
 exports.getUserNotification = async function(req, res) {
    tradeController.getNotification(req)
       .then(trades => {
+         //console.log(trades);
          var result = [];
          trades.forEach(info => {
-            var userInfo = info.users.filter(u => u.userId !== req.query.userId)
+            var userInfo = info.users.filter(u => {
+               console.log(u.userId, req.query.userId);
+               u.userId !== req.query.userId;
+            })
             var notif = info.notifications[info.notifications.length -1 ];
-            if(notif.status === 0 && notif.receiverId === req.query.userId) {
+            console.log(notif);
+            if(notif.status === 0 && notif.receiverId.includes(req.query.userId)) {
                result.push({user: userInfo, notification: notif});
             }
          })
          return result;
       })
-      .then(result => res.send(result))
+      .then(result => {
+         console.log('day la result',result);
+         res.send(result)
+
+      })
 }
 
 recheckRoom = async function(req, io) {
@@ -370,12 +379,6 @@ checkTradeStatus = async function(req, io) {
          .then(body => {
             var bodyRes = JSON.parse(body);
             transInfo.transactionId = bodyRes.message;
-            //var transInfo = {
-            //   transactionId:  bodyRes.message,
-            //   room: req.room,
-            //   users:[users[0], users[1]],
-            //   qrCode: qrCode
-            //}
             transactionController.createTransaction(transInfo);
             io.to(req.room).emit("trade-done", transInfo);
             //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
@@ -391,6 +394,35 @@ checkTradeStatus = async function(req, io) {
       if(err) console.log(500, err);
    }
    )
+}
+
+exports.fetchTransactionAPI = function() {
+   fetch.Promise = Bluebird;
+   fetch('http://35.247.191.68:8080/transaction', {
+      method: 'POST',
+      body: JSON.stringify(transactionWrapper),
+      headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json',
+         'Authorization': req.token
+      }
+   })
+      .then(res => res.text())
+      .then(body => {
+         var bodyRes = JSON.parse(body);
+         transInfo.transactionId = bodyRes.message;
+         transactionController.createTransaction(transInfo);
+         io.to(req.room).emit("trade-done", transInfo);
+         //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
+         req.notiType = -4;
+         req.msg = req.room;
+         req.transactionId = transInfo.transactionId;
+         //tradeController.sendMessage(req, io);
+         tradeController.resetTrade(req, io);
+         console.log('hello im spring: ' + bodyRes.message);
+         req.userId = ''
+         tradeController.saveNoti(req, io);
+      });
 }
 
 exports.resetTrade = async function(req, io) {
