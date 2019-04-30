@@ -200,12 +200,9 @@ exports.getUserNotification = async function(req, res) {
          //console.log(trades);
          var result = [];
          trades.forEach(info => {
-            var userInfo = info.users.filter(u => {
-               console.log(u.userId, req.query.userId);
-               u.userId !== req.query.userId;
-            })
+            var userInfo = info.users.filter(u => u.userId !== req.query.userId)
             var notif = info.notifications[info.notifications.length -1 ];
-            console.log(notif);
+            console.log(userInfo);
             if(notif.status === 0 && notif.receiverId.includes(req.query.userId)) {
                result.push({user: userInfo, notification: notif});
             }
