@@ -27,7 +27,6 @@ exports.notiUserById = async function(userId, io, request) {
       {'_id': 0, 'users._id': 0}, function(err, user) {
          if(user) {
             console.log(`noti to ${userId}: ${user.socketId}`);
-            console.log(`event ${request.event}: ${request.info}`);
             io.to(user.socketId).emit(request.event, request.info);
          }
       })

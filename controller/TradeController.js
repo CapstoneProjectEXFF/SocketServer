@@ -272,6 +272,11 @@ exports.removeItem = async function(req) {
             userId: req.userId,
             ownerId: req.ownerId
          }
+         if(req.removeInv === undefined) {
+            item.removeInv = 0;
+         } else {
+            item.removeInv = 1;
+         }
          itemController.unmarkItem(req.itemId, req.room);
          io.to(req.room).emit('item-removed', item);
          req.notiType = -6;

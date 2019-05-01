@@ -42,18 +42,10 @@ exports.notifyItemUnavailable = async function(req, io) {
             item[0].rooms.map(i => {
                if (i !== req.room) {
                   tradeController.removeItem({
-                     room: i, itemId: req.itemId, userId: -1}, io);
+                     room: i, itemId: req.itemId, userId: -1, removeInv: 1}, io);
                }
             })
-            var request = {
-               'event': 'remove-from-inv',
-               'itemInfo': {
-                  'itemId': item[0].itemId,
-                  'ownerId': item[0].ownerId
-               }
-            }
-            console.log('tao da o day', request);
-            userController.notiUserById(item[0].owerId, io, request)
+            //userController.notiUserById(item[0].owerId, io, request)
          }
       })
 }
