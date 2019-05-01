@@ -381,6 +381,11 @@ exports.fetchTransactionAPI = function(req, res) {
       var transWrapper = req.body.transactionWrapper;
       var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
       var qrCode = generateQR(users);
+      req.transInfo = {
+         qrCode: qrCode,
+         users: users,
+         donationId: transWrapper.donationId,
+      }
    }
    transWrapper.transaction.qrCode = qrCode;
    fetch.Promise = Bluebird;
@@ -396,14 +401,6 @@ exports.fetchTransactionAPI = function(req, res) {
       .then(res => res.text())
       .then(body => {
          var bodyRes = JSON.parse(body);
-         if (req.transInfo === undefined) {
-            console.log('hello');
-            req.transInfo = {
-               qrCode: qrCode,
-               users: users,
-               donationId: transWrapper.donationId,
-            }
-         }
          req.transInfo.transactionId = bodyRes.message;
          transactionController.createTransaction(req.transInfo);
          if(req.room !== undefined) {
