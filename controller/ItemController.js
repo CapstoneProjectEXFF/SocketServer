@@ -49,8 +49,7 @@ exports.notifyItemUnavailable = async function(req, io) {
                'event': 'remove-from-inv',
                'info': {
                   'itemId': item[0].itemId,
-                  'ownerId': item[0].ownerId,
-                  'room': i
+                  'ownerId': item[0].ownerId
                }
             }
             userController.notiUserById(req.userId, io, request)
