@@ -3,7 +3,8 @@ var Trade = mongoose.model('Trade');
 var Item = mongoose.model('Item');
 var Notification = mongoose.model('Notification');
 var Socket = require('../bin/www');
-var io = Socket.io;
+//var io = Socket.io;
+var io;
 var itemController = require('./ItemController');
 var tradeController = require('./TradeController');
 var userController = require('./UserController');
@@ -13,9 +14,8 @@ var Bluebird = require('bluebird');
 var crypto = require('crypto');
 var socketId;
 
-exports.initSocket = function(id) {
-   socketId = id;
-   console.log(socketId);
+exports.initIO = function(IO) {
+   io = IO;
 }
 
 exports.getUserTrading = async function(req, res) {
@@ -39,9 +39,10 @@ exports.getRoomMessage = async function(req, res) {
       });
 }
 
-exports.upsertTrade = async function(req, io, socket) {
+exports.upsertTrade = async function(req, socket) {
    var users = req.room.split('-');
    var roomName; 
+   console.log(io);
    await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}
@@ -79,7 +80,7 @@ getUserFromAPI = async function(userId) {
       })
 } 
 
-createTrade = async function(roomInfo, io) {
+createTrade = async function(roomInfo) {
    //var userA = await getUserFromAPI(roomInfo.userA);
    var res = await fetch(`http://35.247.191.68:8080/user/${roomInfo.userA}`);
    var userA = await res.json();
@@ -105,7 +106,7 @@ createTrade = async function(roomInfo, io) {
    return await Promise.resolve(roomInfo.room);
 }
 
-exports.sendMessage = async function(req, io) {
+exports.sendMessage = async function(req) {
    var message = {
       sender: req.sender,
       msg: req.msg
@@ -122,7 +123,7 @@ exports.sendMessage = async function(req, io) {
    )
 }
 
-exports.saveNoti = async function(req, io) {
+exports.saveNoti = async function(req) {
    if(req.notiTo === '') req.userId = '';
    io.in(req.room).clients(async (err, clients) => {
       console.log(`phong nay co ${clients.length}`);
@@ -147,7 +148,7 @@ exports.saveNoti = async function(req, io) {
    })
 }
 
-exports.checkNoti = async function(req, io) {
+exports.checkNoti = async function(req) {
    console.log('noti read');
    await Trade.update({'notifications._id': mongoose.Types.ObjectId(req)},
       {'$set': {'notifications.$.status': 1}},
@@ -215,7 +216,7 @@ exports.getUserNotification = async function(req, res) {
       })
 }
 
-recheckRoom = async function(req, io) {
+recheckRoom = async function(req) {
    await Trade.findOneAndUpdate({$and: [
       {'room': req.room},
       {"users": {$elemMatch: {status: 1}}}
@@ -228,7 +229,7 @@ recheckRoom = async function(req, io) {
       })
 }
 
-exports.addItem = async function(req, io) {
+exports.addItem = async function(req) {
    recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.ownerId},
       {'$addToSet': {'users.$.item': [req.itemId]},
@@ -254,7 +255,7 @@ exports.addItem = async function(req, io) {
    )
 }
 
-exports.removeItem = async function(req, io) {
+exports.removeItem = async function(req) {
    recheckRoom(req, io);
    await Trade.update({'room': req.room, 'users.userId': req.ownerId},
       {'$pull': {'users.$.item': req.itemId},
@@ -277,7 +278,7 @@ exports.removeItem = async function(req, io) {
    )
 }
 
-exports.confirmTrade = async function(req, io) {
+exports.confirmTrade = async function(req) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 1, "activeTime": new Date()},
       (err, trade) => {
@@ -287,7 +288,7 @@ exports.confirmTrade = async function(req, io) {
    )
 }
 
-exports.unconfirmTrade = async function(req, io) {
+exports.unconfirmTrade = async function(req) {
    await Trade.update({'room': req.room, 'users.userId': req.userId},
       {'users.$.status': 0, "activeTime": new Date()},
       (err, trade) => {
@@ -316,7 +317,7 @@ generateQR = function(users) {
    return code.toString('hex');
 }
 
-checkTradeStatus = async function(req, io) {
+checkTradeStatus = async function(req) {
    console.log(`${req.userId} has confirmed`);
    var result = {
       userId: req.userId,
@@ -379,10 +380,10 @@ checkTradeStatus = async function(req, io) {
 }
 
 exports.fetchTransactionAPI = function(req, res) {
+   var transWrapper = req.body.transactionWrapper;
+   var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
+   var qrCode = generateQR(users);
    if(req.body.fromInside === undefined) {
-      var transWrapper = req.body.transactionWrapper;
-      var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
-      var qrCode = generateQR(users);
       req.transInfo = {
          qrCode: qrCode,
          users: users,
@@ -415,6 +416,13 @@ exports.fetchTransactionAPI = function(req, res) {
             tradeController.saveNoti(req, res);
          } else {
             console.log('xong roi', res);
+            transWrapper.details.map(detail => {
+               itemController.notifyItemUnavailable({
+                  itemId: detail.itemId,
+                  userId: detail.userId,
+                  room: '',
+               }, io);
+            })
             res.send(parseInt(bodyRes.message) + '');
          }
 
@@ -422,7 +430,7 @@ exports.fetchTransactionAPI = function(req, res) {
       });
 }
 
-exports.resetTrade = async function(req, io) {
+exports.resetTrade = async function(req) {
    await Trade.update({'room': req.room},
       {$set: {"users.$[].item": []}, 'users.$[].status': 0, 'status': 0},
       (err, trade) => {
