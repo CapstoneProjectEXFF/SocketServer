@@ -197,12 +197,10 @@ exports.getNotification = async function(req) {
 exports.getUserNotification = async function(req, res) {
    tradeController.getNotification(req)
       .then(trades => {
-         //console.log(trades);
          var result = [];
          trades.forEach(info => {
             var userInfo = info.users.filter(u => u.userId !== req.query.userId)
             var notif = info.notifications[info.notifications.length -1 ];
-            console.log(userInfo);
             if(notif.status === 0 && notif.receiverId.includes(req.query.userId)) {
                result.push({user: userInfo, notification: notif});
             }
@@ -270,10 +268,8 @@ exports.removeItem = async function(req, io) {
          }
          itemController.unmarkItem(req.itemId, req.room, req.userId);
          io.to(req.room).emit('item-removed', item);
-         //io.to(req.room).emit('send-msg', {sender: -6, msg: req.itemId, room: req.room})
          req.notiType = -6;
          req.msg = req.itemId;
-         //tradeController.sendMessage(req, io);
          tradeController.saveNoti(req, io)
          console.log(`${req.userId} remove item ${req.itemId} from room ${req.room}`);
       }
@@ -305,6 +301,14 @@ exports.unconfirmTrade = async function(req, io) {
    )
 }
 
+generateQR = function(users) {
+   var hash = crypto.createHash('sha256');
+   var code = users[0] + users[1] + new Date();
+   code = hash.update(code);
+   code = hash.digest(code);
+   return code.toString('hex');
+}
+
 checkTradeStatus = async function(req, io) {
    console.log(`${req.userId} has confirmed`);
    var result = {
@@ -312,10 +316,8 @@ checkTradeStatus = async function(req, io) {
       room: req.room
    }
    io.to(req.room).emit('user-accepted-trade', result);
-   //io.to(req.room).emit('send-msg', {sender: -1, msg: req.userId, room: req.room})
    req.notiType = -1;
    req.msg = req.userId;
-   //tradeController.sendMessage(req, io);
    tradeController.saveNoti(req, io)
    await Trade.findOne({$and: [
       {'room': req.room},
@@ -323,11 +325,7 @@ checkTradeStatus = async function(req, io) {
    ]}, (err, trade) => {
       if(trade === null) return;
       var users = req.room.split('-').sort();
-      var hash = crypto.createHash('sha256');
-      var code = users[0] + users[1] + new Date();
-      code = hash.update(code);
-      code = hash.digest(code);
-      var qrCode = code.toString('hex');
+      var qrCode = generateQR(users);
       var transactionWrapper = {
          "transaction": {
             "receiverId": users[0],
@@ -336,6 +334,7 @@ checkTradeStatus = async function(req, io) {
          },
          "details": []
       }
+
 
       var transInfo = {
          room: req.room,
@@ -360,65 +359,52 @@ checkTradeStatus = async function(req, io) {
             transInfo.users = transInfo.users.concat(users[index]);
          }
       })
-
+      req.body = {};
+      req.body.transactionWrapper = transactionWrapper;
+      req.body.token = req.token;
+      req.transInfo = transInfo;
       console.log(transactionWrapper.details);
-      fetch.Promise = Bluebird;
-      fetch('http://35.247.191.68:8080/transaction', {
-         method: 'POST',
-         body: JSON.stringify(transactionWrapper),
-         headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': req.token
-         }
-      })
-         .then(res => res.text())
-         .then(body => {
-            var bodyRes = JSON.parse(body);
-            transInfo.transactionId = bodyRes.message;
-            transactionController.createTransaction(transInfo);
-            io.to(req.room).emit("trade-done", transInfo);
-            //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
-            req.notiType = -4;
-            req.msg = req.room;
-            req.transactionId = transInfo.transactionId;
-            //tradeController.sendMessage(req, io);
-            tradeController.resetTrade(req, io);
-            console.log('hello im spring: ' + bodyRes.message);
-            req.userId = ''
-            tradeController.saveNoti(req, io);
-         });
+      tradeController.fetchTransactionAPI(req, io);
       if(err) console.log(500, err);
    }
    )
 }
 
-exports.fetchTransactionAPI = function() {
+exports.fetchTransactionAPI = function(req, io) {
+   var transWrapper = req.body.transactionWrapper;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
       method: 'POST',
-      body: JSON.stringify(transactionWrapper),
+      body: JSON.stringify(transWrapper),
       headers: {
          'Accept': 'application/json',
          'Content-Type': 'application/json',
-         'Authorization': req.token
+         'Authorization': req.body.token
       }
    })
       .then(res => res.text())
       .then(body => {
          var bodyRes = JSON.parse(body);
-         transInfo.transactionId = bodyRes.message;
-         transactionController.createTransaction(transInfo);
-         io.to(req.room).emit("trade-done", transInfo);
-         //io.to(req.room).emit('send-msg', {sender: -4, msg: req.room, room: req.room})
-         req.notiType = -4;
-         req.msg = req.room;
-         req.transactionId = transInfo.transactionId;
-         //tradeController.sendMessage(req, io);
-         tradeController.resetTrade(req, io);
+         if (req.transInfo !== undefined) {
+            req.transInfo = {
+               qrCode: qrCode,
+               users: [transWrapper.transaction.senderId, transWrapper.transaction.receiverId],
+               donationId: transWrapper.donationId
+            }
+         }
+         req.transInfo.transactionId = bodyRes.message;
+         transactionController.createTransaction(req.transInfo);
+         if(req.room !== undefined) {
+            io.to(req.room).emit("trade-done", req.transInfo);
+            tradeController.resetTrade(req, io);
+            req.notiType = -4;
+            req.msg = req.room;
+            req.transactionId = req.transInfo.transactionId;
+            req.userId = ''
+            tradeController.saveNoti(req, io);
+         }
+
          console.log('hello im spring: ' + bodyRes.message);
-         req.userId = ''
-         tradeController.saveNoti(req, io);
       });
 }
 

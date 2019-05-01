@@ -4,6 +4,7 @@ const transactionSchema = new mongoose.Schema({
    transactionId: Number,
    users: [String],
    qrCode: String,
+   donationId: String,
    status: {
       type: Number,
       default: function() {return 0;}

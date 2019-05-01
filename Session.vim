@@ -7,17 +7,17 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +159 controller/TradeController.js
+badd +143 controller/TradeController.js
 badd +25 socket/SocketServer.js
 badd +1 Constants.js
 badd +1 model/ItemModel.js
 badd +21 model/TradeModel.js
 badd +35 bin/www
 badd +7 util/FetchUtil.js
-badd +10 routes/TradeRoute.js
-badd +5 controller/ItemController.js
-badd +26 app.js
-badd +16 model/TransactionModel.js
+badd +15 routes/TradeRoute.js
+badd +41 controller/ItemController.js
+badd +25 app.js
+badd +9 model/TransactionModel.js
 badd +1 controller/TransactionController.js
 badd +17 /usr/share/nvim/runtime/doc/help.txt
 badd +5 model/NotificationModel.js

@@ -11,4 +11,6 @@ module.exports = function (app) {
       .get(trading.getUserNotification);
    app.route('/trading/msg')
       .get(trading.getRoomMessage);
+   app.route('/transaction')
+      .post(trading.fetchTransactionAPI);
 }
