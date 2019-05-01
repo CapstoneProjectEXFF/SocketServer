@@ -412,7 +412,7 @@ exports.fetchTransactionAPI = function(req, res) {
             tradeController.saveNoti(req, res);
          } else {
             console.log('xong roi', res);
-            res.send(parseInt(bodyRes.message));
+            res.send(parseInt(bodyRes.message) + '');
          }
       
          console.log('hello im spring: ' + bodyRes.message);
