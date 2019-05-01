@@ -13,4 +13,6 @@ module.exports = function (app) {
       .get(trading.getRoomMessage);
    app.route('/transaction')
       .post(trading.fetchTransactionAPI);
+   app.route('/test')
+      .post(trading.testNhen);
 }

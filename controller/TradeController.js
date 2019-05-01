@@ -301,6 +301,12 @@ exports.unconfirmTrade = async function(req, io) {
    )
 }
 
+exports.testNhen = function(req, res) {
+   //console.log(Object.keys(res.req));
+   console.log(res.req.method);
+   res.send('ohno');
+}
+
 generateQR = function(users) {
    var hash = crypto.createHash('sha256');
    var code = users[0] + users[1] + new Date();
@@ -370,7 +376,7 @@ checkTradeStatus = async function(req, io) {
    )
 }
 
-exports.fetchTransactionAPI = function(req, response, io) {
+exports.fetchTransactionAPI = function(req, res) {
    var transWrapper = req.body.transactionWrapper;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
@@ -397,20 +403,18 @@ exports.fetchTransactionAPI = function(req, response, io) {
          req.transInfo.transactionId = bodyRes.message;
          transactionController.createTransaction(req.transInfo);
          if(req.room !== undefined) {
-            io.to(req.room).emit("trade-done", req.transInfo);
-            tradeController.resetTrade(req, io);
+            res.to(req.room).emit("trade-done", req.transInfo);
+            tradeController.resetTrade(req, res);
             req.notiType = -4;
             req.msg = req.room;
             req.transactionId = req.transInfo.transactionId;
             req.userId = ''
-            tradeController.saveNoti(req, io);
+            tradeController.saveNoti(req, res);
          } else {
-            if(response !== undefined) {
-               console.log('xong roi', response);
-               response.send(bodyRes.message);
-            }
+            console.log('xong roi', res);
+            res.send(parseInt(bodyRes.message));
          }
-
+      
          console.log('hello im spring: ' + bodyRes.message);
       });
 }
