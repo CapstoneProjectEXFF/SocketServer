@@ -22,12 +22,12 @@ exports.assignUser = async function(req, io) {
    )
 }
 
-exports.notiUserById = async function(userId, io) {
+exports.notiUserById = async function(userId, io, request) {
    await User.findOne({'userId': userId},
       {'_id': 0, 'users._id': 0}, function(err, user) {
          if(user) {
             console.log(`noti to ${userId}: ${user.socketId}`);
-            io.to(user.socketId).emit('trade-change', 'new noti') 
+            io.to(user.socketId).emit(request.event, request.info);
          }
       })
 }

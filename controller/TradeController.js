@@ -142,7 +142,8 @@ exports.saveNoti = async function(req) {
             {'$addToSet': {notifications: noti}},
             async (err) => {
                if(err) console.log(500, err);
-               userController.notiUserById(receiver, io);
+               userController.notiUserById(receiver, io,
+                  {'event': 'trade-change', 'info': 'new noti'});
             })
       }
    })

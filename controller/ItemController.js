@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Item = mongoose.model('Item');
 var tradeController = require('./TradeController');
+var userController = require('./UserController');
 var Socket = require('../bin/www');
 var io = Socket.io;
 
@@ -43,6 +44,16 @@ exports.notifyItemUnavailable = async function(req, io) {
                   tradeController.removeItem({
                      room: i, itemId: req.itemId,
                      userId: req.userId}, io);
+                  var request = {
+                     'event': 'remove-from-inv',
+                     'info': {
+                        'itemId': req.itemId,
+                        'userId': req.userId,
+                        'room': i
+                     }
+                  }
+                  userController.notiUserById(req.userId, io, request)
+                  //io.to().emit('remove-from-inv', itemInfo);
                }
             })
          }
