@@ -123,12 +123,16 @@ exports.sendMessage = async function(req) {
 }
 
 exports.saveNoti = async function(req) {
-   if(req.notiTo === '') req.userId = '';
+   if(req.notiTo === '') {
+      userId = '';
+   } else {
+      userId = req.userId;
+   }
    io.in(req.room).clients(async (err, clients) => {
       console.log(`phong nay co ${clients.length}`);
       if(clients.length < 2) {
          var users = req.room.split('-').sort();
-         var receiver = users.filter(i => i !== '' + req.userId);
+         var receiver = users.filter(i => i !== '' + userId);
 
          var noti = {
             receiverId: receiver,
@@ -293,10 +297,8 @@ exports.unconfirmTrade = async function(req) {
       {'users.$.status': 0, "activeTime": new Date()},
       (err, trade) => {
          io.to(req.room).emit('trade-unconfirmed', {room: req.room, userId: req.userId});
-         //io.to(req.room).emit('send-msg', {sender: -2, msg: req.userId, room: req.room})
          req.notiType = -2;
          req.msg = req.userId;
-         //tradeController.sendMessage(req, io);
          tradeController.saveNoti(req, io)
          if(err) console.log(500, err);
       }
@@ -304,7 +306,6 @@ exports.unconfirmTrade = async function(req) {
 }
 
 exports.testNhen = function(req, res) {
-   //console.log(Object.keys(res.req));
    console.log(res.req.method);
    res.send('ohno');
 }
@@ -408,7 +409,7 @@ exports.fetchTransactionAPI = function(req, res) {
          transactionController.createTransaction(req.transInfo);
          if(req.room !== undefined) {
             res.to(req.room).emit("trade-done", req.transInfo);
-            tradeController.resetTrade(req, res);
+            tradeController.resetTrade(req);
             req.notiType = -4;
             req.msg = req.room;
             req.transactionId = req.transInfo.transactionId;
@@ -431,6 +432,7 @@ exports.fetchTransactionAPI = function(req, res) {
 }
 
 exports.resetTrade = async function(req) {
+   console.log(Object.keys(req));
    await Trade.update({'room': req.room},
       {$set: {"users.$[].item": []}, 'users.$[].status': 0, 'status': 0},
       (err, trade) => {
