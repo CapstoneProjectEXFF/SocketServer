@@ -405,7 +405,7 @@ exports.fetchTransactionAPI = function(req, response, io) {
             req.userId = ''
             tradeController.saveNoti(req, io);
          } else {
-            if(res !== undefined) {
+            if(response !== undefined) {
                console.log('xong roi', response);
                response.send(bodyRes.message);
             }
