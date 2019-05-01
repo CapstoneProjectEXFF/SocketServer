@@ -244,7 +244,7 @@ exports.addItem = async function(req) {
             userId: req.userId,
             ownerId: req.ownerId
          }
-         itemController.markItem(req.itemId, req.room, req.userId);
+         itemController.markItem(req.itemId, req.room, req.ownerId);
          io.to(req.room).emit('item-added', item);
          //io.to(req.room).emit('send-msg', {sender: -5, msg: req.itemId, room: req.room})
          req.notiType = -5;
@@ -269,7 +269,7 @@ exports.removeItem = async function(req) {
             userId: req.userId,
             ownerId: req.ownerId
          }
-         itemController.unmarkItem(req.itemId, req.room, req.userId);
+         itemController.unmarkItem(req.itemId, req.room);
          io.to(req.room).emit('item-removed', item);
          req.notiType = -6;
          req.msg = req.itemId;

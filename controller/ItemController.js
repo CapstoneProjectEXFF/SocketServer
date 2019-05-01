@@ -9,13 +9,13 @@ exports.getSuggestedItems = async function(req, io) {
 
 }
 
-exports.markItem = async function(itemId, room, userId) {
+exports.markItem = async function(itemId, room, ownerId) {
    await Item.findOneAndUpdate({'itemId': itemId},
       {'$addToSet': {rooms: room}},
       async (err, item) => {
          if(err) console.log(500, err);
          if(item === null) {
-            var item = new Item({itemId: itemId, userId: userId, rooms:[room]});
+            var item = new Item({itemId: itemId, ownerId: ownerId, rooms:[room]});
             await item.save((err) => {
                console.log('item saved');
                if(err) console.log(500);
@@ -42,20 +42,19 @@ exports.notifyItemUnavailable = async function(req, io) {
             item[0].rooms.map(i => {
                if (i !== req.room) {
                   tradeController.removeItem({
-                     room: i, itemId: req.itemId,
-                     userId: req.userId}, io);
-                  var request = {
-                     'event': 'remove-from-inv',
-                     'info': {
-                        'itemId': req.itemId,
-                        'userId': req.userId,
-                        'room': i
-                     }
-                  }
-                  userController.notiUserById(req.userId, io, request)
-                  //io.to().emit('remove-from-inv', itemInfo);
+                     room: i, itemId: req.itemId}, io);
                }
             })
+            var request = {
+               'event': 'remove-from-inv',
+               'info': {
+                  'itemId': item[0].itemId,
+                  'ownerId': item[0].ownerId,
+                  'room': i
+               }
+            }
+            userController.notiUserById(req.userId, io, request)
+            //io.to().emit('remove-from-inv', itemInfo);
          }
       })
 }

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const itemSchema = new mongoose.Schema({
    itemId: String,
-   userId: String,
+   ownerId: String,
    rooms: [String],
    status: Number,
    like: [String]
