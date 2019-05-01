@@ -47,13 +47,13 @@ exports.notifyItemUnavailable = async function(req, io) {
             })
             var request = {
                'event': 'remove-from-inv',
-               'info': {
+               'itemInfo': {
                   'itemId': item[0].itemId,
                   'ownerId': item[0].ownerId
                }
             }
+            console.log('tao da o day', request);
             userController.notiUserById(item[0].owerId, io, request)
-            //io.to().emit('remove-from-inv', itemInfo);
          }
       })
 }
