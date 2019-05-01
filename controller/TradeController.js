@@ -123,6 +123,7 @@ exports.sendMessage = async function(req, io) {
 }
 
 exports.saveNoti = async function(req, io) {
+   if(req.notiTo === '') req.userId = '';
    io.in(req.room).clients(async (err, clients) => {
       console.log(`phong nay co ${clients.length}`);
       if(clients.length < 2) {
@@ -409,7 +410,7 @@ exports.fetchTransactionAPI = function(req, res) {
             req.notiType = -4;
             req.msg = req.room;
             req.transactionId = req.transInfo.transactionId;
-            req.userId = ''
+            req.notiTo = '';
             tradeController.saveNoti(req, res);
          } else {
             console.log('xong roi', res);
