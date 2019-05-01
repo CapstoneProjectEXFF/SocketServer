@@ -370,7 +370,7 @@ checkTradeStatus = async function(req, io) {
    )
 }
 
-exports.fetchTransactionAPI = function(req, res, io) {
+exports.fetchTransactionAPI = function(req, response, io) {
    var transWrapper = req.body.transactionWrapper;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
@@ -406,8 +406,8 @@ exports.fetchTransactionAPI = function(req, res, io) {
             tradeController.saveNoti(req, io);
          } else {
             if(res !== undefined) {
-               console.log('xong roi');
-               res.send(bodyRes.message);
+               console.log('xong roi', response);
+               response.send(bodyRes.message);
             }
          }
 
