@@ -370,6 +370,7 @@ checkTradeStatus = async function(req, io) {
       req.body.transactionWrapper = transactionWrapper;
       req.body.token = req.token;
       req.transInfo = transInfo;
+      req.body.fromInside = 1;
       console.log(transactionWrapper.details);
       tradeController.fetchTransactionAPI(req, io);
       if(err) console.log(500, err);
@@ -378,7 +379,7 @@ checkTradeStatus = async function(req, io) {
 }
 
 exports.fetchTransactionAPI = function(req, res) {
-   if(req.body !== undefined) {
+   if(req.body.fromInside === undefined) {
       var transWrapper = req.body.transactionWrapper;
       var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
       var qrCode = generateQR(users);
