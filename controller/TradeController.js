@@ -377,7 +377,12 @@ checkTradeStatus = async function(req, io) {
 }
 
 exports.fetchTransactionAPI = function(req, res) {
-   var transWrapper = req.body.transactionWrapper;
+   if(req.body !== undefined) {
+      var transWrapper = req.body.transactionWrapper;
+      var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
+      var qrCode = generateQR(users);
+   }
+   transWrapper.transaction.qrCode = qrCode;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
       method: 'POST',
@@ -391,11 +396,10 @@ exports.fetchTransactionAPI = function(req, res) {
       .then(res => res.text())
       .then(body => {
          var bodyRes = JSON.parse(body);
-         var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
          if (req.transInfo === undefined) {
             console.log('hello');
             req.transInfo = {
-               qrCode: generateQR(users),
+               qrCode: qrCode,
                users: users,
                donationId: transWrapper.donationId,
             }
@@ -414,7 +418,7 @@ exports.fetchTransactionAPI = function(req, res) {
             console.log('xong roi', res);
             res.send(parseInt(bodyRes.message) + '');
          }
-      
+
          console.log('hello im spring: ' + bodyRes.message);
       });
 }
