@@ -370,7 +370,7 @@ checkTradeStatus = async function(req, io) {
    )
 }
 
-exports.fetchTransactionAPI = function(req, io) {
+exports.fetchTransactionAPI = function(req, res, io) {
    var transWrapper = req.body.transactionWrapper;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
@@ -385,11 +385,13 @@ exports.fetchTransactionAPI = function(req, io) {
       .then(res => res.text())
       .then(body => {
          var bodyRes = JSON.parse(body);
-         if (req.transInfo !== undefined) {
+         var users = [transWrapper.transaction.senderId, transWrapper.transaction.receiverId];
+         if (req.transInfo === undefined) {
+            console.log('hello');
             req.transInfo = {
-               qrCode: qrCode,
-               users: [transWrapper.transaction.senderId, transWrapper.transaction.receiverId],
-               donationId: transWrapper.donationId
+               qrCode: generateQR(users),
+               users: users,
+               donationId: transWrapper.donationId,
             }
          }
          req.transInfo.transactionId = bodyRes.message;
@@ -402,6 +404,11 @@ exports.fetchTransactionAPI = function(req, io) {
             req.transactionId = req.transInfo.transactionId;
             req.userId = ''
             tradeController.saveNoti(req, io);
+         } else {
+            if(res !== undefined) {
+               console.log('xong roi');
+               res.send(bodyRes.message);
+            }
          }
 
          console.log('hello im spring: ' + bodyRes.message);
