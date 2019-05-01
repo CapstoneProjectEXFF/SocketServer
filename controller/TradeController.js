@@ -42,7 +42,6 @@ exports.getRoomMessage = async function(req, res) {
 exports.upsertTrade = async function(req, socket) {
    var users = req.room.split('-');
    var roomName; 
-   console.log(io);
    await Trade.findOneAndUpdate({$and: [
       {"users.userId": users[0]},
       {"users.userId": users[1]}

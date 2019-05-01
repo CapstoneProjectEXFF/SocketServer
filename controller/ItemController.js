@@ -42,7 +42,7 @@ exports.notifyItemUnavailable = async function(req, io) {
             item[0].rooms.map(i => {
                if (i !== req.room) {
                   tradeController.removeItem({
-                     room: i, itemId: req.itemId}, io);
+                     room: i, itemId: req.itemId, userId: -1}, io);
                }
             })
             var request = {
@@ -52,7 +52,7 @@ exports.notifyItemUnavailable = async function(req, io) {
                   'ownerId': item[0].ownerId
                }
             }
-            userController.notiUserById(req.userId, io, request)
+            userController.notiUserById(item[0].owerId, io, request)
             //io.to().emit('remove-from-inv', itemInfo);
          }
       })
