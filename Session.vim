@@ -15,18 +15,19 @@ badd +21 model/TradeModel.js
 badd +35 bin/www
 badd +7 util/FetchUtil.js
 badd +17 routes/TradeRoute.js
-badd +45 controller/ItemController.js
+badd +16 controller/ItemController.js
 badd +25 app.js
 badd +9 model/TransactionModel.js
-badd +30 controller/TransactionController.js
+badd +43 controller/TransactionController.js
 badd +17 /usr/share/nvim/runtime/doc/help.txt
 badd +5 model/NotificationModel.js
 badd +17 controller/NotificationController.js
 badd +6 model/UserModel.js
 badd +30 controller/UserController.js
+badd +143 ~/.config/nvim/init.vim
 argglobal
 silent! argdel *
-edit controller/ItemController.js
+edit controller/TransactionController.js
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
