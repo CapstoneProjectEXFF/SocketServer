@@ -60,7 +60,7 @@ exports.ioOperate = function(io) {
       socket.on('qr-scan', function(data) {
          data.socketId = socket.id;
          //transaction.scanQRCode(data, io);
-         transaction.scanQRCode(data);
+         transaction.scanQRCode(data, io);
       })
 
       socket.on('noti-read', function(data) {
