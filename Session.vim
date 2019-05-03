@@ -8,7 +8,7 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 set shortmess=aoO
 badd +277 controller/TradeController.js
-badd +60 socket/SocketServer.js
+badd +63 socket/SocketServer.js
 badd +1 Constants.js
 badd +5 model/ItemModel.js
 badd +21 model/TradeModel.js
@@ -27,7 +27,7 @@ badd +30 controller/UserController.js
 badd +143 ~/.config/nvim/init.vim
 argglobal
 silent! argdel *
-edit socket/SocketServer.js
+edit controller/TransactionController.js
 set splitbelow splitright
 set nosplitbelow
 set nosplitright

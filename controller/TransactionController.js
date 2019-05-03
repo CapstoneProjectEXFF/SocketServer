@@ -36,7 +36,7 @@ exports.scanQRCode = async function(data, io) {
          if(result !== undefined) {
             await Transaction.find({'qrCode': data.qrCode}, function(err, res) {
                console.log(`${data.userId} scan thanh cong ${data.qrCode}`);
-               if(res !== undefined) {
+               if(res[0] !== undefined) {
                   io.to(data.socketId).emit('scan-succeeded',
                      {transactionId: res[0].transactionId, userId: data.userId});
                   checkTransactionStatus(data, io);
