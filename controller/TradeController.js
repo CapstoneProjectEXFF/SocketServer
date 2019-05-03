@@ -389,7 +389,7 @@ exports.fetchTransactionAPI = function(req, res) {
    if(req.body.fromInside === undefined) {
       req.transInfo = {
          qrCode: qrCode,
-         users: users,
+         users: transWrapper.transaction.receiverId,
          donationId: transWrapper.donationId,
       }
    }
