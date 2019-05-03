@@ -339,12 +339,10 @@ checkTradeStatus = async function(req) {
    ]}, (err, trade) => {
       if(trade === null) return;
       var users = req.room.split('-').sort();
-      var qrCode = generateQR(users);
       var transactionWrapper = {
          "transaction": {
             "receiverId": users[0],
-            "senderId": users[1],
-            "qrCode": qrCode
+            "senderId": users[1]
          },
          "details": []
       }
@@ -352,7 +350,6 @@ checkTradeStatus = async function(req) {
 
       var transInfo = {
          room: req.room,
-         qrCode: qrCode,
          users: []
       }
 
@@ -397,6 +394,7 @@ exports.fetchTransactionAPI = function(req, res) {
       }
    }
    transWrapper.transaction.qrCode = qrCode;
+   req.transInfo.qrCode = qrCode;
    fetch.Promise = Bluebird;
    fetch('http://35.247.191.68:8080/transaction', {
       method: 'POST',
