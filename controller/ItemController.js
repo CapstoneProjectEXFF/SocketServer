@@ -2,11 +2,55 @@ var mongoose = require('mongoose');
 var Item = mongoose.model('Item');
 var tradeController = require('./TradeController');
 var userController = require('./UserController');
+var itemController = require('./ItemController');
 var Socket = require('../bin/www');
 var io = Socket.io;
+var Client  = require('@elastic/elasticsearch')
+var client = new Client.Client({ node: 'http://35.247.191.68:9200' })
 
-exports.getSuggestedItems = async function(req, io) {
+exports.getItems = async function(req, res) {
+   itemController.getSuggestedItems(req);
+}
 
+exports.getSuggestedItems = async function(req, res) {
+   await client.search({
+      index: 'exff_els',
+      type: 'item',
+      body: {
+         query: {
+            match: {
+               'user_id': req.params.userId
+            }
+         }
+      }
+   }).then(response => {
+      var result = response.body.hits;
+      var dataset = result.hits.map(hit => hit._source.prefer_items);
+      return dataset
+   }).then(async (i) => {
+      var items = [];
+      var itemFound = i.map(async (name) => {
+         console.log(name)
+         await client.search({
+            index: 'exff_els',
+            type: 'item',
+            body: {
+               query: {
+                  match: {
+                     'name': name
+                  }
+               }
+            }
+         }).then(resp => {
+            var resu = resp.body.hits;
+            var dataSet = resu.hits.map(hit => hit._source.name);
+            items = items.concat(dataSet);
+         }) 
+      })
+      Promise.all(itemFound).then(() => {
+         res.send(items);
+      })
+   })
 }
 
 exports.markItem = async function(itemId, room, ownerId) {
