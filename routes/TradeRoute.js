@@ -7,6 +7,12 @@ module.exports = function (app) {
       .post(trading.upsertTrade);
    app.route('/room')
       .get(trading.getRoomById);
+   app.route('/notification')
+      .get(trading.getUserNotification);
    app.route('/trading/msg')
       .get(trading.getRoomMessage);
+   app.route('/transaction')
+      .post(trading.fetchTransactionAPI);
+   app.route('/test')
+      .post(trading.testNhen);
 }

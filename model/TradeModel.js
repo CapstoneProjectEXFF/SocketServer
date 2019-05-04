@@ -17,6 +17,13 @@ const tradeSchema = new mongoose.Schema({
       msg: String
       //   sentTime: Date
    }],
+   notifications: [{
+      receiverId: [String],
+      msg: String,
+      notiType: Number,
+      status: Number,
+      activeTime: Date
+   }],
    room: String,
    activeTime: Date,
    transferTime: Date,
