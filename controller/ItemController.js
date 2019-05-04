@@ -43,7 +43,9 @@ exports.getSuggestedItems = async function(req, res) {
             }
          }).then(resp => {
             var resu = resp.body.hits;
-            var dataSet = resu.hits.map(hit => hit._source.name);
+            var dataSet = resu.hits.map(hit => {
+               return {id : hit._source.id, name : hit._source.name};
+            });
             items = items.concat(dataSet);
          }) 
       })
