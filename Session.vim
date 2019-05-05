@@ -18,7 +18,7 @@ badd +17 routes/TradeRoute.js
 badd +53 controller/ItemController.js
 badd +49 app.js
 badd +9 model/TransactionModel.js
-badd +2 controller/TransactionController.js
+badd +21 controller/TransactionController.js
 badd +17 /usr/share/nvim/runtime/doc/help.txt
 badd +5 model/NotificationModel.js
 badd +17 controller/NotificationController.js
@@ -30,7 +30,7 @@ badd +7 routes/TransactionRoute.js
 badd +4 controller/DonationController.js
 argglobal
 silent! argdel *
-edit controller/TransactionController.js
+edit controller/TradeController.js
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
