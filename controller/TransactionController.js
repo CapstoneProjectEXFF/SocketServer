@@ -1,8 +1,42 @@
 var mongoose = require('mongoose');
 var Transaction = mongoose.model('Transaction');
 var socket = require('../socket/SocketServer');
-var fetch = require('node-fetch');
-var Bluebird = require('bluebird');
+var Client  = require('@elastic/elasticsearch')
+var client = new Client.Client({ node: 'http://35.247.191.68:9200' })
+
+exports.getUserTransaction = async function(req, res) {
+   await Transaction.find({$and: [
+      {"users": {$in: [req.params.userId]}}
+   ]}, function(err, transaction) {
+      //console.log(transaction)
+      res.send(transaction);
+   })
+}
+
+exports.getUserFriend = async function(data, io) {
+   await client.search({
+      index: 'exff_rela',
+      type: 'relationship',
+      body: {
+         query: {
+            multi_match: {
+               query: req.params.userId,
+               fields: ['sender_id', 'receiver_id']
+            }
+         }
+      }
+   }).then(response => {
+      var result = response.body.hits;
+      var dataset = result.hits.map(hit => {
+         return {
+            sender_id: hit._source.sender_id,
+            receiver_id: hit._source.receiver_id
+         }
+      });
+      //console.log(dataset);
+      return dataset;
+   })
+}
 
 exports.createTransaction = async function(data, io) {
    var transInfo = {

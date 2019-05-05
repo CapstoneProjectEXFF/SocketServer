@@ -46,5 +46,7 @@ var TradeRoute = require('./routes/TradeRoute');
 TradeRoute(app);
 var ItemRoute = require('./routes/ItemRoute');
 ItemRoute(app);
+var TransactionRoute = require('./routes/TransactionRoute');
+TransactionRoute(app);
 
 module.exports = app;
