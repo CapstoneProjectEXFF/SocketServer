@@ -51,7 +51,7 @@ exports.getSuggestedItems = async function(req, res) {
       })
       Promise.all(itemFound).then(() => {
          console.log(items.length);
-         res.send(items);
+         res.send(items.slice(0,5));
       })
    })
 }
