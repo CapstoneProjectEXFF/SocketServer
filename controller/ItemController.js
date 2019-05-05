@@ -50,8 +50,8 @@ exports.getSuggestedItems = async function(req, res) {
          }) 
       })
       Promise.all(itemFound).then(() => {
-         var top12Items = items.slice(0,11);
-         res.send(top12Items);
+         console.log(items.length);
+         res.send(items);
       })
    })
 }

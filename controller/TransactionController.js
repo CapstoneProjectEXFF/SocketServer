@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
 var Transaction = mongoose.model('Transaction');
 var socket = require('../socket/SocketServer');
+var fetch = require('node-fetch');
+var Bluebird = require('bluebird');
 var Client  = require('@elastic/elasticsearch')
 var client = new Client.Client({ node: 'http://35.247.191.68:9200' })
 
